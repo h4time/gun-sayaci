@@ -1,0 +1,42 @@
+name: gun_sayaci
+description: "Özel günlerinize geri sayım yapın. Doğum günü, bayram, yıldönümü ve daha fazlası."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  google_fonts: ^6.2.1
+  flutter_local_notifications: ^18.0.1
+  timezone: ^0.10.0
+  intl: ^0.20.2
+  provider: ^6.1.2
+  uuid: ^4.5.1
+  flutter_animate: ^4.5.2
+  shared_preferences: ^2.3.4
+  share_plus: ^10.1.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.3
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/app_icon.png"
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/icons/
