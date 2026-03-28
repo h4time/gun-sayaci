@@ -20,8 +20,8 @@ class AppTheme {
     'Doğum Günü': 'assets/images/birthday.jpg',
     'Tatil': 'assets/images/travel.jpg',
     'Düğün/Yıldönümü': 'assets/images/celebration.jpg',
-    'Sınav/İş': 'assets/images/celebration.jpg',
-    'Seyahat': 'assets/images/travel.jpg',
+    'Sınav/İş': 'assets/images/exam.jpg',
+    'Seyahat': 'assets/images/seyahat.jpg',
     'Diğer': 'assets/images/other.jpg',
   };
 

@@ -77,6 +77,8 @@ class _HomeScreenState extends State<HomeScreen>
                             style: GoogleFonts.poppins(fontSize: 16),
                             keyboardType: TextInputType.text,
                             textInputAction: TextInputAction.search,
+                            autocorrect: false,
+                            enableSuggestions: true,
                             decoration: InputDecoration(
                               hintText: 'Etkinlik ara...',
                               hintStyle: GoogleFonts.poppins(
@@ -88,25 +90,35 @@ class _HomeScreenState extends State<HomeScreen>
                             onChanged: (val) =>
                                 setState(() => _searchQuery = val),
                           )
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                        : Row(
                             children: [
-                              Text(
-                                'Gün Sayacı',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.w800,
-                                  color: isDark ? Colors.white : Colors.grey[900],
-                                ),
+                              Image.asset(
+                                'assets/icons/app_icon.png',
+                                width: 32,
+                                height: 32,
                               ),
-                              Text(
-                                dateStr,
-                                style: GoogleFonts.poppins(
-                                  fontSize: 13,
-                                  color: isDark
-                                      ? Colors.grey[400]
-                                      : Colors.grey[600],
-                                ),
+                              const SizedBox(width: 10),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Gün Sayacı',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.w800,
+                                      color: isDark ? Colors.white : Colors.grey[900],
+                                    ),
+                                  ),
+                                  Text(
+                                    dateStr,
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 13,
+                                      color: isDark
+                                          ? Colors.grey[400]
+                                          : Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),

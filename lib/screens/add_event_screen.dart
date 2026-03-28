@@ -110,6 +110,8 @@ class _AddEventSheetState extends State<AddEventSheet> {
                   keyboardType: TextInputType.text,
                   textCapitalization: TextCapitalization.sentences,
                   enableIMEPersonalizedLearning: true,
+                  autocorrect: false,
+                  enableSuggestions: true,
                   onChanged: (_) => setState(() {}),
                   decoration: InputDecoration(
                     hintText: 'Örn: Annemin Doğum Günü',
