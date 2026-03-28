@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(taskkill //F //IM \"flutter_tool*\")",
+      "Bash(taskkill //F //IM \"dart.exe\")"
+    ]
+  }
+}

@@ -93,108 +93,84 @@ class CountdownCard extends StatelessWidget {
 
                     // Content
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
                       child: Row(
                         children: [
-                          // Left side - D-Day number
-                          Expanded(
-                            flex: 2,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  event.dDayText,
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 48,
-                                    fontWeight: FontWeight.w800,
-                                    color: isToday
-                                        ? const Color(0xFFFFD700)
-                                        : Colors.white,
-                                    height: 1.0,
-                                  ),
-                                ),
-                                if (isToday)
-                                  Text(
-                                    'Bugün!',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: const Color(0xFFFFD700),
-                                    ),
-                                  ),
-                                if (isPastView)
-                                  Text(
-                                    '${event.daysRemaining.abs()} gün önce',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w400,
-                                      color: Colors.white.withValues(alpha: 0.7),
-                                    ),
-                                  ),
-                              ],
-                            ),
+                          // Left side - Premium countdown (fixed 100px)
+                          SizedBox(
+                            width: 100,
+                            child: _buildCountdownWidget(event, isToday, isPast),
                           ),
 
-                          // Right side - Event info
+                          const SizedBox(width: 8),
+
+                          // Middle - Event info (flexible, right padding for icon)
                           Expanded(
-                            flex: 3,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.end,
-                              children: [
-                                Text(
-                                  event.title,
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.white,
-                                    height: 1.2,
-                                  ),
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  textAlign: TextAlign.right,
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  _formatDate(event.targetDate),
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w400,
-                                    color: Colors.white.withValues(alpha: 0.85),
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.2),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(
-                                    event.category,
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 50),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    event.title,
                                     style: GoogleFonts.poppins(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.white.withValues(alpha: 0.9),
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                      height: 1.2,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.right,
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    _formatDate(event.targetDate),
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w400,
+                                      color: Colors.white.withValues(alpha: 0.85),
                                     ),
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(height: 4),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [Color(0xFF2D1B69), Color(0xFF1A1A2E)],
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      event.category,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
 
-                    // Category icon in top-right corner
+                    // Category icon in top-right corner (fixed 40px area)
                     Positioned(
                       top: 12,
                       right: 12,
-                      child: _buildCategoryIcon(iconPath, event.category),
+                      child: SizedBox(
+                        width: 40,
+                        height: 40,
+                        child: _buildCategoryIcon(iconPath, event.category),
+                      ),
                     ),
 
                     // D-Day celebration badge
@@ -273,6 +249,97 @@ class CountdownCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildCountdownWidget(EventModel event, bool isToday, bool isPast) {
+    final days = event.daysRemaining;
+    const shadowList = [
+      Shadow(color: Colors.black54, blurRadius: 8, offset: Offset(0, 2)),
+    ];
+
+    // D-Day: "Bugün!" + kutlama emojisi
+    if (isToday) {
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Bugün!',
+            style: GoogleFonts.poppins(
+              fontSize: 42,
+              fontWeight: FontWeight.w800,
+              color: const Color(0xFFFFD700),
+              height: 1.0,
+              shadows: shadowList,
+            ),
+          ),
+          const SizedBox(height: 4),
+          const Text('🎉🥳', style: TextStyle(fontSize: 24)),
+        ],
+      );
+    }
+
+    // 1 günden az kaldıysa saat:dakika göster
+    if (days == 0 && !event.isExpired) {
+      final remaining = event.remaining;
+      final hours = remaining.inHours;
+      final minutes = remaining.inMinutes % 60;
+      return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}',
+            style: GoogleFonts.poppins(
+              fontSize: 48,
+              fontWeight: FontWeight.w800,
+              color: Colors.white,
+              height: 1.0,
+              shadows: shadowList,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            'saat',
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.w300,
+              color: Colors.white.withValues(alpha: 0.85),
+            ),
+          ),
+        ],
+      );
+    }
+
+    // Geçmiş veya gelecek: sayı + "gün" / "gün önce"
+    final absDay = days.abs();
+    final label = isPastView ? 'gün önce' : 'gün';
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '$absDay',
+          style: GoogleFonts.poppins(
+            fontSize: 56,
+            fontWeight: FontWeight.w800,
+            color: Colors.white,
+            height: 1.0,
+            shadows: shadowList,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            fontWeight: FontWeight.w300,
+            color: Colors.white.withValues(alpha: 0.85),
+          ),
+        ),
+      ],
     );
   }
 

@@ -156,25 +156,24 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                 const Spacer(),
 
                 // D-Day large display
-                Text(
-                  widget.event.dDayText,
-                  style: GoogleFonts.poppins(
-                    fontSize: 72,
-                    fontWeight: FontWeight.w800,
-                    color: isToday ? const Color(0xFFFFD700) : Colors.white,
-                    height: 1.0,
-                    shadows: [
-                      Shadow(
-                        blurRadius: 20,
-                        color: Colors.black.withValues(alpha: 0.5),
-                      ),
-                    ],
+                if (isToday) ...[
+                  Text(
+                    'Bugün!',
+                    style: GoogleFonts.poppins(
+                      fontSize: 72,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFFFFD700),
+                      height: 1.0,
+                      shadows: [
+                        Shadow(
+                          blurRadius: 20,
+                          color: Colors.black.withValues(alpha: 0.5),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-
-                if (isToday)
+                  const SizedBox(height: 8),
                   Container(
-                    margin: const EdgeInsets.only(top: 8),
                     padding:
                         const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                     decoration: BoxDecoration(
@@ -192,6 +191,32 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                       ),
                     ),
                   ),
+                ] else ...[
+                  Text(
+                    '${widget.event.daysRemaining.abs()}',
+                    style: GoogleFonts.poppins(
+                      fontSize: 72,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      height: 1.0,
+                      shadows: [
+                        Shadow(
+                          blurRadius: 20,
+                          color: Colors.black.withValues(alpha: 0.5),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    isPast ? 'gün önce' : 'gün',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w300,
+                      color: Colors.white.withValues(alpha: 0.85),
+                    ),
+                  ),
+                ],
 
                 const SizedBox(height: 12),
 

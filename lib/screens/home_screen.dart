@@ -93,9 +93,9 @@ class _HomeScreenState extends State<HomeScreen>
                         : Row(
                             children: [
                               Image.asset(
-                                'assets/icons/app_icon.png',
-                                width: 32,
-                                height: 32,
+                                'assets/icons/arka-plan-no.png',
+                                width: 44,
+                                height: 44,
                               ),
                               const SizedBox(width: 10),
                               Column(
@@ -199,28 +199,29 @@ class _HomeScreenState extends State<HomeScreen>
                         decoration: BoxDecoration(
                           gradient: isSelected
                               ? const LinearGradient(
+                                  begin: Alignment(-1, -1),
+                                  end: Alignment(1, 1),
                                   colors: [
-                                    Color(0xFF6C63FF),
-                                    Color(0xFF4ECDC4),
+                                    Color(0xFF8B6914),
+                                    Color(0xFFC8873A),
                                   ],
                                 )
                               : null,
                           color: isSelected
                               ? null
-                              : (isDark ? Colors.grey[800] : Colors.white),
+                              : Colors.transparent,
                           borderRadius: BorderRadius.circular(20),
                           border: isSelected
                               ? null
                               : Border.all(
-                                  color: isDark
-                                      ? Colors.grey[700]!
-                                      : Colors.grey[300]!,
+                                  color: const Color(0xFFD4AF37),
+                                  width: 1.5,
                                 ),
                           boxShadow: isSelected
                               ? [
                                   BoxShadow(
-                                    color: const Color(0xFF6C63FF)
-                                        .withValues(alpha: 0.3),
+                                    color: const Color(0xFF8B6914)
+                                        .withValues(alpha: 0.4),
                                     blurRadius: 8,
                                     offset: const Offset(0, 2),
                                   ),
@@ -235,9 +236,7 @@ class _HomeScreenState extends State<HomeScreen>
                               size: 16,
                               color: isSelected
                                   ? Colors.white
-                                  : (isDark
-                                      ? Colors.grey[400]
-                                      : Colors.grey[600]),
+                                  : const Color(0xFF8B6914),
                             ),
                             const SizedBox(width: 6),
                             Text(
@@ -249,9 +248,7 @@ class _HomeScreenState extends State<HomeScreen>
                                     : FontWeight.w500,
                                 color: isSelected
                                     ? Colors.white
-                                    : (isDark
-                                        ? Colors.grey[300]
-                                        : Colors.grey[700]),
+                                    : const Color(0xFF8B6914),
                               ),
                             ),
                           ],
@@ -345,13 +342,13 @@ class _HomeScreenState extends State<HomeScreen>
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(28),
         gradient: const LinearGradient(
-          colors: [Color(0xFF6C63FF), Color(0xFF4ECDC4)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
+          colors: [Color(0xFF1A1A2E), Color(0xFF8B6914)],
+          begin: Alignment(-1, -1),
+          end: Alignment(1, 1),
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF6C63FF).withValues(alpha: 0.4),
+            color: const Color(0xFF8B6914).withValues(alpha: 0.4),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
