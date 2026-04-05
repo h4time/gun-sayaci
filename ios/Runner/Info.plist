@@ -21,7 +21,7 @@
 			<dict>
 				<key>CFBundleIconFiles</key>
 				<array>
-					<string>AlternateIcons/IconDark</string>
+					<string>IconDark</string>
 				</array>
 				<key>UIPrerenderedIcon</key>
 				<false/>
@@ -30,7 +30,7 @@
 			<dict>
 				<key>CFBundleIconFiles</key>
 				<array>
-					<string>AlternateIcons/IconPinkPurple</string>
+					<string>IconPinkPurple</string>
 				</array>
 				<key>UIPrerenderedIcon</key>
 				<false/>
@@ -39,7 +39,7 @@
 			<dict>
 				<key>CFBundleIconFiles</key>
 				<array>
-					<string>AlternateIcons/IconPink</string>
+					<string>IconPink</string>
 				</array>
 				<key>UIPrerenderedIcon</key>
 				<false/>
@@ -48,7 +48,7 @@
 			<dict>
 				<key>CFBundleIconFiles</key>
 				<array>
-					<string>AlternateIcons/IconOrange</string>
+					<string>IconOrange</string>
 				</array>
 				<key>UIPrerenderedIcon</key>
 				<false/>
@@ -57,7 +57,7 @@
 			<dict>
 				<key>CFBundleIconFiles</key>
 				<array>
-					<string>AlternateIcons/IconAmber</string>
+					<string>IconAmber</string>
 				</array>
 				<key>UIPrerenderedIcon</key>
 				<false/>
@@ -66,7 +66,7 @@
 			<dict>
 				<key>CFBundleIconFiles</key>
 				<array>
-					<string>AlternateIcons/IconMint</string>
+					<string>IconMint</string>
 				</array>
 				<key>UIPrerenderedIcon</key>
 				<false/>
@@ -75,7 +75,7 @@
 			<dict>
 				<key>CFBundleIconFiles</key>
 				<array>
-					<string>AlternateIcons/IconParty</string>
+					<string>IconParty</string>
 				</array>
 				<key>UIPrerenderedIcon</key>
 				<false/>
@@ -84,7 +84,7 @@
 			<dict>
 				<key>CFBundleIconFiles</key>
 				<array>
-					<string>AlternateIcons/IconBlue</string>
+					<string>IconBlue</string>
 				</array>
 				<key>UIPrerenderedIcon</key>
 				<false/>
@@ -93,7 +93,7 @@
 			<dict>
 				<key>CFBundleIconFiles</key>
 				<array>
-					<string>AlternateIcons/IconTeal</string>
+					<string>IconTeal</string>
 				</array>
 				<key>UIPrerenderedIcon</key>
 				<false/>
@@ -102,7 +102,7 @@
 			<dict>
 				<key>CFBundleIconFiles</key>
 				<array>
-					<string>AlternateIcons/IconLavender</string>
+					<string>IconLavender</string>
 				</array>
 				<key>UIPrerenderedIcon</key>
 				<false/>
