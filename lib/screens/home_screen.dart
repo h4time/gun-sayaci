@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/event_model.dart';
 import '../services/storage_service.dart';
 import '../services/notification_service.dart';
@@ -29,6 +30,19 @@ class _HomeScreenState extends State<HomeScreen> {
   String _selectedCategory = 'Tümü';
   int _selectedTab = 1; // 0=Geçmiş, 1=Yaklaşan
   bool _imagesPrecached = false;
+  String _cardSize = 'large';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCardSize();
+  }
+
+  Future<void> _loadCardSize() async {
+    final prefs = await SharedPreferences.getInstance();
+    final size = prefs.getString('eventCardSize') ?? 'large';
+    if (mounted && size != _cardSize) setState(() => _cardSize = size);
+  }
 
   @override
   void didChangeDependencies() {
@@ -163,6 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   onEdit: () =>
                                       _showEditEventSheet(event),
                                   isPastView: isPast,
+                                  cardSize: _cardSize,
                                 ),
                               ).animate().fadeIn(
                                     duration: 400.ms,
@@ -718,7 +733,10 @@ class _HomeScreenState extends State<HomeScreen> {
         transitionDuration: const Duration(milliseconds: 350),
         reverseTransitionDuration: const Duration(milliseconds: 300),
       ),
-    ).then((_) => _resetCategory());
+    ).then((_) {
+      _resetCategory();
+      _loadCardSize();
+    });
   }
 
   Widget _buildSettingsCard({

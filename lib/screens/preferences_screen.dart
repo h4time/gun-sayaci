@@ -10,11 +10,13 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/theme_provider.dart';
 import '../services/storage_service.dart';
 import '../services/notification_service.dart';
 import '../models/event_model.dart';
 import '../theme/app_theme.dart';
+import 'event_size_screen.dart';
 
 class PreferencesScreen extends StatefulWidget {
   const PreferencesScreen({super.key});
@@ -26,6 +28,145 @@ class PreferencesScreen extends StatefulWidget {
 class _PreferencesScreenState extends State<PreferencesScreen> {
   final _storageService = StorageService();
   bool _isLoading = false;
+  int _notifHour = 9;
+  int _notifMinute = 0;
+  String _cardSize = 'large';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPrefs();
+  }
+
+  Future<void> _loadPrefs() async {
+    final (hour, minute) = await NotificationService().getNotificationTime();
+    final prefs = await SharedPreferences.getInstance();
+    final size = prefs.getString('eventCardSize') ?? 'large';
+    if (mounted) {
+      setState(() {
+        _notifHour = hour;
+        _notifMinute = minute;
+        _cardSize = size;
+      });
+    }
+  }
+
+  String get _timeLabel =>
+      '${_notifHour.toString().padLeft(2, '0')}:${_notifMinute.toString().padLeft(2, '0')}';
+
+  String get _sizeLabelTr {
+    switch (_cardSize) {
+      case 'small':
+        return 'Küçük';
+      case 'medium':
+        return 'Orta';
+      default:
+        return 'Büyük';
+    }
+  }
+
+  // === NOTIFICATION TIME PICKER ===
+  void _showTimePicker() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final textColor = isDark ? Colors.white : AppTheme.primaryText;
+    int tempHour = _notifHour;
+    int tempMinute = _notifMinute;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Handle
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(vertical: 12),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[400],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 4, 24, 8),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Bildirim Zamanı',
+                    style: GoogleFonts.poppins(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: textColor,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: 200,
+                child: CupertinoDatePicker(
+                  mode: CupertinoDatePickerMode.time,
+                  use24hFormat: true,
+                  initialDateTime: DateTime(2024, 1, 1, _notifHour, _notifMinute),
+                  onDateTimeChanged: (dt) {
+                    HapticFeedback.selectionClick();
+                    tempHour = dt.hour;
+                    tempMinute = dt.minute;
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+                child: GestureDetector(
+                  onTap: () async {
+                    HapticFeedback.lightImpact();
+                    Navigator.pop(ctx);
+                    setState(() {
+                      _notifHour = tempHour;
+                      _notifMinute = tempMinute;
+                    });
+                    final ns = NotificationService();
+                    await ns.setNotificationTime(tempHour, tempMinute);
+                    // Reschedule all notifications with new time
+                    final events = _storageService.getAllEvents();
+                    await ns.rescheduleAll(events);
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryText,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Kaydet',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   // === BACKUP ===
   Future<void> _backupData() async {
@@ -495,6 +636,28 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                           ],
                         ),
                       ),
+                      const SizedBox(height: 8),
+
+                      _settingsCard(
+                        icon: Icons.aspect_ratio_rounded,
+                        label: 'Etkinlik Boyutu',
+                        trailing: Text(
+                          _sizeLabelTr,
+                          style: GoogleFonts.poppins(
+                              fontSize: 14, color: secondaryColor),
+                        ),
+                        cardBg: cardBg,
+                        textColor: textColor,
+                        secondaryColor: secondaryColor,
+                        onTap: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const EventSizeScreen()),
+                          );
+                          _loadPrefs();
+                        },
+                      ),
 
                       const SizedBox(height: 24),
 
@@ -505,16 +668,14 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                         icon: Icons.access_time_rounded,
                         label: 'Bildirim Zamanı',
                         trailing: Text(
-                          '09:00',
+                          _timeLabel,
                           style: GoogleFonts.poppins(
                               fontSize: 14, color: secondaryColor),
                         ),
                         cardBg: cardBg,
                         textColor: textColor,
                         secondaryColor: secondaryColor,
-                        onTap: () {
-                          // Placeholder
-                        },
+                        onTap: _showTimePicker,
                       ),
 
                       const SizedBox(height: 24),

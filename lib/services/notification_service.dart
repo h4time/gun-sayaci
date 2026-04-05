@@ -1,4 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz_data;
 import '../models/event_model.dart';
@@ -10,6 +11,9 @@ class NotificationService {
 
   final FlutterLocalNotificationsPlugin _plugin =
       FlutterLocalNotificationsPlugin();
+
+  static const String _hourKey = 'notificationHour';
+  static const String _minuteKey = 'notificationMinute';
 
   Future<void> init() async {
     tz_data.initializeTimeZones();
@@ -38,6 +42,21 @@ class NotificationService {
     }
   }
 
+  /// Get saved notification time (defaults to 09:00)
+  Future<(int, int)> getNotificationTime() async {
+    final prefs = await SharedPreferences.getInstance();
+    final hour = prefs.getInt(_hourKey) ?? 9;
+    final minute = prefs.getInt(_minuteKey) ?? 0;
+    return (hour, minute);
+  }
+
+  /// Save notification time
+  Future<void> setNotificationTime(int hour, int minute) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_hourKey, hour);
+    await prefs.setInt(_minuteKey, minute);
+  }
+
   Future<void> scheduleEventNotification(EventModel event) async {
     if (!event.notificationEnabled) return;
 
@@ -45,6 +64,7 @@ class NotificationService {
     await cancelEventNotification(event.id);
 
     final baseId = event.id.hashCode;
+    final (hour, minute) = await getNotificationTime();
 
     // Event day notification (always active - reminderEventDay is always true)
     final eventDayDate = tz.TZDateTime(
@@ -52,14 +72,14 @@ class NotificationService {
       event.targetDate.year,
       event.targetDate.month,
       event.targetDate.day,
-      9,
-      0,
+      hour,
+      minute,
     );
     if (eventDayDate.isAfter(tz.TZDateTime.now(tz.local))) {
       await _scheduleNotification(
         id: baseId,
         title: 'Bugün Günü Geldi! 🎉',
-        body: '"${event.title}" bugün!',
+        body: '📅 "${event.title}" bugün!',
         scheduledDate: eventDayDate,
       );
     }
@@ -70,7 +90,9 @@ class NotificationService {
         baseId: baseId + 1,
         event: event,
         daysBefore: 1,
-        message: '"${event.title}" etkinliğine 1 gün kaldı!',
+        hour: hour,
+        minute: minute,
+        message: '📅 "${event.title}" etkinliğine 1 gün kaldı!',
       );
     }
 
@@ -80,7 +102,9 @@ class NotificationService {
         baseId: baseId + 2,
         event: event,
         daysBefore: 3,
-        message: '"${event.title}" etkinliğine 3 gün kaldı!',
+        hour: hour,
+        minute: minute,
+        message: '📅 "${event.title}" etkinliğine 3 gün kaldı!',
       );
     }
 
@@ -90,7 +114,9 @@ class NotificationService {
         baseId: baseId + 3,
         event: event,
         daysBefore: 7,
-        message: '"${event.title}" etkinliğine 1 hafta kaldı!',
+        hour: hour,
+        minute: minute,
+        message: '📅 "${event.title}" etkinliğine 1 hafta kaldı!',
       );
     }
 
@@ -100,7 +126,9 @@ class NotificationService {
         baseId: baseId + 4,
         event: event,
         daysBefore: 30,
-        message: '"${event.title}" etkinliğine 1 ay kaldı!',
+        hour: hour,
+        minute: minute,
+        message: '📅 "${event.title}" etkinliğine 1 ay kaldı!',
       );
     }
   }
@@ -109,6 +137,8 @@ class NotificationService {
     required int baseId,
     required EventModel event,
     required int daysBefore,
+    required int hour,
+    required int minute,
     required String message,
   }) async {
     final scheduledDate = tz.TZDateTime(
@@ -116,8 +146,8 @@ class NotificationService {
       event.targetDate.year,
       event.targetDate.month,
       event.targetDate.day - daysBefore,
-      9,
-      0,
+      hour,
+      minute,
     );
     if (scheduledDate.isAfter(tz.TZDateTime.now(tz.local))) {
       await _scheduleNotification(
@@ -126,6 +156,14 @@ class NotificationService {
         body: message,
         scheduledDate: scheduledDate,
       );
+    }
+  }
+
+  /// Reschedule all notifications (call after changing notification time)
+  Future<void> rescheduleAll(List<EventModel> events) async {
+    await cancelAll();
+    for (final event in events) {
+      await scheduleEventNotification(event);
     }
   }
 
