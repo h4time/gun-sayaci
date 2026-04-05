@@ -78,7 +78,7 @@ class _CountdownCardState extends State<CountdownCard> {
     final catEmoji = _categoryEmojis[widget.event.category] ?? '📌';
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
       child: AnimatedScale(
         scale: _pressed ? 0.97 : 1.0,
         duration: Duration(milliseconds: _pressed ? 150 : 250),
@@ -116,7 +116,7 @@ class _CountdownCardState extends State<CountdownCard> {
             child: Opacity(
               opacity: isPast ? 0.7 : 1.0,
               child: SizedBox(
-                height: 260,
+                height: 220,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(20),
                   child: Stack(
@@ -155,7 +155,7 @@ class _CountdownCardState extends State<CountdownCard> {
                         bottom: 0,
                         left: 0,
                         right: 0,
-                        height: 260 * 0.60,
+                        height: 220 * 0.60,
                         child: Container(
                           decoration: const BoxDecoration(
                             gradient: LinearGradient(
@@ -172,25 +172,25 @@ class _CountdownCardState extends State<CountdownCard> {
 
                       // Category badge (translucent)
                       Positioned(
-                        top: 12,
-                        left: 12,
+                        top: 10,
+                        left: 10,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 5),
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: catColor.withValues(alpha: 0.7),
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(16),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(catEmoji,
-                                  style: const TextStyle(fontSize: 10)),
+                                  style: const TextStyle(fontSize: 9)),
                               const SizedBox(width: 3),
                               Text(
                                 widget.event.category,
                                 style: GoogleFonts.poppins(
-                                  fontSize: 10,
+                                  fontSize: 9,
                                   fontWeight: FontWeight.w700,
                                   color: Colors.white,
                                 ),
@@ -202,8 +202,8 @@ class _CountdownCardState extends State<CountdownCard> {
 
                       // Countdown circle
                       Positioned(
-                        top: 12,
-                        right: 12,
+                        top: 10,
+                        right: 10,
                         child: _buildCountdownCircle(
                             widget.event, isToday, isPast, catColor),
                       ),
@@ -211,7 +211,7 @@ class _CountdownCardState extends State<CountdownCard> {
                       // "BUGÜN" badge
                       if (isToday)
                         Positioned(
-                          top: 12,
+                          top: 10,
                           left: 0,
                           right: 0,
                           child: Center(
@@ -237,9 +237,9 @@ class _CountdownCardState extends State<CountdownCard> {
 
                       // Title + Date
                       Positioned(
-                        bottom: 16,
-                        left: 16,
-                        right: 16,
+                        bottom: 14,
+                        left: 14,
+                        right: 14,
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -249,7 +249,7 @@ class _CountdownCardState extends State<CountdownCard> {
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: GoogleFonts.poppins(
-                                fontSize: 22,
+                                fontSize: 20,
                                 fontWeight: FontWeight.w700,
                                 color: Colors.white,
                                 height: 1.15,
@@ -267,7 +267,7 @@ class _CountdownCardState extends State<CountdownCard> {
                               _formatDate(widget.event.targetDate),
                               textAlign: TextAlign.center,
                               style: GoogleFonts.poppins(
-                                fontSize: 12,
+                                fontSize: 11,
                                 fontWeight: FontWeight.w400,
                                 color: const Color(0xA6FFFFFF), // 65%
                                 letterSpacing: 0.3,
@@ -313,16 +313,16 @@ class _CountdownCardState extends State<CountdownCard> {
     const progressColor = AppTheme.accent;
 
     return Container(
-      width: 58,
-      height: 58,
+      width: 50,
+      height: 50,
       decoration: const BoxDecoration(
         color: Color(0x55000000),
         shape: BoxShape.circle,
       ),
       child: Center(
         child: CircularPercentIndicator(
-          radius: 27.0,
-          lineWidth: 2.5,
+          radius: 23.0,
+          lineWidth: 2.0,
           percent: percent,
           animation: true,
           animationDuration: 800,
@@ -339,7 +339,7 @@ class _CountdownCardState extends State<CountdownCard> {
               Text(
                 countText,
                 style: GoogleFonts.poppins(
-                  fontSize: 20,
+                  fontSize: 17,
                   fontWeight: FontWeight.w700,
                   color: Colors.white,
                   height: 1.1,
@@ -348,7 +348,7 @@ class _CountdownCardState extends State<CountdownCard> {
               Text(
                 labelText,
                 style: GoogleFonts.poppins(
-                  fontSize: 9,
+                  fontSize: 8,
                   fontWeight: FontWeight.w500,
                   color: const Color(0xB3FFFFFF),
                   height: 1.0,

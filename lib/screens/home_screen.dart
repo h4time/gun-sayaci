@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -58,8 +59,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            Positioned.fill(
-              child: ValueListenableBuilder(
+            ValueListenableBuilder(
               valueListenable: _storageService.box.listenable(),
               builder: (context, Box<EventModel> box, _) {
                 var allEvents = _storageService.getAllEvents();
@@ -82,86 +82,99 @@ class _HomeScreenState extends State<HomeScreen> {
                 final events = _selectedTab == 1 ? upcoming : past;
                 final isPast = _selectedTab == 0;
 
-                if (events.isEmpty) {
-                  return Column(
-                    children: [
-                      _buildHeader(isDark),
-                      Expanded(child: _buildEmptyState(isDark, isPast)),
-                    ],
-                  );
-                }
-
-                return ListView.builder(
+                return CustomScrollView(
                   physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.only(bottom: 120),
-                  itemCount: events.length + 1, // +1 for header
-                  itemBuilder: (context, index) {
-                    // First item is the header
-                    if (index == 0) {
-                      return _buildHeader(isDark);
-                    }
+                  slivers: [
+                    // Header — part of scroll content
+                    SliverToBoxAdapter(
+                      child: _buildHeader(isDark),
+                    ),
 
-                    final eventIndex = index - 1;
-                    final event = events[eventIndex];
-                    return Dismissible(
-                      key: Key(event.id),
-                      direction: DismissDirection.horizontal,
-                      confirmDismiss: (direction) async {
-                        if (direction ==
-                            DismissDirection.endToStart) {
-                          HapticFeedback.mediumImpact();
-                          return await _showDeleteConfirm(event);
-                        } else {
-                          HapticFeedback.mediumImpact();
-                          _showEditEventSheet(event);
-                          return false;
-                        }
-                      },
-                      onDismissed: (_) => _deleteEvent(event),
-                      background: Container(
-                        alignment: Alignment.centerLeft,
-                        padding: const EdgeInsets.only(left: 32),
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 7),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF007AFF),
-                          borderRadius: BorderRadius.circular(20),
+                    if (events.isEmpty)
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: _buildEmptyState(isDark, isPast),
+                      )
+                    else
+                      SliverPadding(
+                        padding: const EdgeInsets.only(bottom: 64),
+                        sliver: SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              final event = events[index];
+                              return Dismissible(
+                                key: Key(event.id),
+                                direction: DismissDirection.horizontal,
+                                confirmDismiss: (direction) async {
+                                  if (direction ==
+                                      DismissDirection.endToStart) {
+                                    HapticFeedback.mediumImpact();
+                                    return await _showDeleteConfirm(
+                                        event);
+                                  } else {
+                                    HapticFeedback.mediumImpact();
+                                    _showEditEventSheet(event);
+                                    return false;
+                                  }
+                                },
+                                onDismissed: (_) => _deleteEvent(event),
+                                background: Container(
+                                  alignment: Alignment.centerLeft,
+                                  padding:
+                                      const EdgeInsets.only(left: 32),
+                                  margin: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 7),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF007AFF),
+                                    borderRadius:
+                                        BorderRadius.circular(20),
+                                  ),
+                                  child: const Icon(Icons.edit_rounded,
+                                      color: Colors.white, size: 24),
+                                ),
+                                secondaryBackground: Container(
+                                  alignment: Alignment.centerRight,
+                                  padding:
+                                      const EdgeInsets.only(right: 32),
+                                  margin: const EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 7),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFF3B30),
+                                    borderRadius:
+                                        BorderRadius.circular(20),
+                                  ),
+                                  child: const Icon(
+                                      Icons.delete_rounded,
+                                      color: Colors.white,
+                                      size: 24),
+                                ),
+                                child: CountdownCard(
+                                  event: event,
+                                  onTap: () =>
+                                      _navigateToDetail(event),
+                                  onDelete: () =>
+                                      _deleteEvent(event),
+                                  onEdit: () =>
+                                      _showEditEventSheet(event),
+                                  isPastView: isPast,
+                                ),
+                              ).animate().fadeIn(
+                                    duration: 400.ms,
+                                    delay: (index * 60).ms,
+                                  );
+                            },
+                            childCount: events.length,
+                          ),
                         ),
-                        child: const Icon(Icons.edit_rounded,
-                            color: Colors.white, size: 24),
                       ),
-                      secondaryBackground: Container(
-                        alignment: Alignment.centerRight,
-                        padding: const EdgeInsets.only(right: 32),
-                        margin: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 7),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFFF3B30),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Icon(Icons.delete_rounded,
-                            color: Colors.white, size: 24),
-                      ),
-                      child: CountdownCard(
-                        event: event,
-                        onTap: () => _navigateToDetail(event),
-                        onDelete: () => _deleteEvent(event),
-                        onEdit: () => _showEditEventSheet(event),
-                        isPastView: isPast,
-                      ),
-                    ).animate().fadeIn(
-                          duration: 400.ms,
-                          delay: (eventIndex * 60).ms,
-                        );
-                  },
+                  ],
                 );
               },
-            ),
             ),
 
             // Floating bottom toggle
             Positioned(
-              bottom: 32,
+              bottom: 16,
               left: 0,
               right: 0,
               child: Center(child: _buildFloatingToggle(isDark)),
@@ -182,10 +195,10 @@ class _HomeScreenState extends State<HomeScreen> {
         isDark ? Colors.black.withValues(alpha: 0.3) : AppTheme.buttonShadow;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
       child: Row(
         children: [
-          // Hamburger button — 3 lines
+          // Hamburger button
           _buildCircleButton(
             isDark: isDark,
             bgColor: bgColor,
@@ -213,7 +226,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
           const Spacer(),
 
-          // Center pill — "#ozelgunleriunutma"
+          // Center pill
           GestureDetector(
             onTap: () {
               HapticFeedback.lightImpact();
@@ -250,7 +263,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
           const Spacer(),
 
-          // Plus button — thin icon
+          // Plus button
           _buildCircleButton(
             isDark: isDark,
             bgColor: bgColor,
@@ -468,7 +481,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   // Category list
                   Expanded(
                     child: ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
                       itemCount: _filters.length,
                       itemBuilder: (context, index) {
                         final filter = _filters[index];
@@ -477,80 +491,37 @@ class _HomeScreenState extends State<HomeScreen> {
                             ? 'Tüm Etkinlikler'
                             : filter;
 
-                        // "Tüm Etkinlikler" gets a white card (Days style)
-                        if (filter == 'Tümü') {
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: GestureDetector(
-                              onTap: () {
-                                HapticFeedback.selectionClick();
-                                setState(
-                                    () => _selectedCategory = filter);
-                                Navigator.pop(context);
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 20, vertical: 16),
-                                decoration: BoxDecoration(
-                                  color: cardBg,
-                                  borderRadius:
-                                      BorderRadius.circular(16),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Text(
-                                      label,
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 16,
-                                        fontWeight: isSelected
-                                            ? FontWeight.w600
-                                            : FontWeight.w400,
-                                        color: textColor,
-                                      ),
-                                    ),
-                                    const Spacer(),
-                                    if (isSelected)
-                                      Icon(Icons.check_rounded,
-                                          color: AppTheme.accent,
-                                          size: 22),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          );
-                        }
-
-                        // Other categories — simple text rows
                         return GestureDetector(
+                          behavior: HitTestBehavior.opaque,
                           onTap: () {
                             HapticFeedback.selectionClick();
                             setState(
                                 () => _selectedCategory = filter);
                             Navigator.pop(context);
                           },
-                          child: Padding(
+                          child: Container(
+                            width: double.infinity,
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 20, vertical: 14),
-                            child: Row(
-                              children: [
-                                Text(
-                                  label,
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 16,
-                                    fontWeight: isSelected
-                                        ? FontWeight.w600
-                                        : FontWeight.w400,
-                                    color: isSelected
-                                        ? textColor
-                                        : secondaryColor,
-                                  ),
-                                ),
-                                const Spacer(),
-                                if (isSelected)
-                                  Icon(Icons.check_rounded,
-                                      color: AppTheme.accent,
-                                      size: 22),
-                              ],
+                            margin: const EdgeInsets.only(bottom: 4),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? cardBg
+                                  : Colors.transparent,
+                              borderRadius:
+                                  BorderRadius.circular(14),
+                            ),
+                            child: Text(
+                              label,
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                fontWeight: isSelected
+                                    ? FontWeight.w600
+                                    : FontWeight.w400,
+                                color: isSelected
+                                    ? textColor
+                                    : secondaryColor,
+                              ),
                             ),
                           ),
                         );
@@ -790,55 +761,183 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // === DELETE CONFIRM ===
   Future<bool> _showDeleteConfirm(EventModel event) async {
-    final result = await showDialog<bool>(
+    HapticFeedback.mediumImpact();
+    final result = await showGeneralDialog<bool>(
       context: context,
-      builder: (ctx) {
-        final isDark = Theme.of(ctx).brightness == Brightness.dark;
-        return AlertDialog(
-          backgroundColor:
-              isDark ? const Color(0xFF1C1C1E) : Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Text(
-            'Etkinliği Sil',
-            style: GoogleFonts.poppins(
-              fontWeight: FontWeight.w600,
-              color: isDark ? Colors.white : AppTheme.primaryText,
+      barrierDismissible: true,
+      barrierLabel: 'Dismiss',
+      barrierColor: Colors.transparent,
+      transitionDuration: const Duration(milliseconds: 250),
+      transitionBuilder: (context, anim, secondAnim, child) {
+        return FadeTransition(
+          opacity: anim,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.85, end: 1.0).animate(
+              CurvedAnimation(parent: anim, curve: Curves.easeOutCubic),
             ),
+            child: child,
           ),
-          content: Text(
-            '"${event.title}" etkinliğini silmek istediğine emin misin?',
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              color: isDark ? Colors.grey[300] : AppTheme.secondaryText,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: Text(
-                'Vazgeç',
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.w500,
-                  color: isDark ? Colors.grey[400] : AppTheme.secondaryText,
+        );
+      },
+      pageBuilder: (context, anim, secondAnim) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final cardBg = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+        final textColor = isDark ? Colors.white : AppTheme.primaryText;
+        final subColor =
+            isDark ? Colors.grey[400]! : AppTheme.secondaryText;
+
+        return Center(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            child: Container(
+              width: MediaQuery.of(context).size.width - 64,
+              padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
+              decoration: BoxDecoration(
+                color: cardBg,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.15),
+                    blurRadius: 30,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: Material(
+                color: Colors.transparent,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Warning icon
+                    Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF3B30)
+                            .withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.delete_outline_rounded,
+                        color: Color(0xFFFF3B30),
+                        size: 26,
+                      ),
+                    )
+                        .animate()
+                        .scale(
+                          begin: const Offset(0.0, 0.0),
+                          end: const Offset(1.0, 1.0),
+                          duration: 350.ms,
+                          curve: Curves.elasticOut,
+                        )
+                        .fadeIn(duration: 200.ms),
+
+                    const SizedBox(height: 16),
+
+                    Text(
+                      'Etkinliği Sil',
+                      style: GoogleFonts.poppins(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: textColor,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    RichText(
+                      textAlign: TextAlign.center,
+                      text: TextSpan(
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: subColor,
+                          height: 1.4,
+                        ),
+                        children: [
+                          const TextSpan(text: '"'),
+                          TextSpan(
+                            text: event.title,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              color: textColor,
+                            ),
+                          ),
+                          const TextSpan(
+                              text:
+                                  '" etkinliğini silmek istediğine emin misin?'),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Buttons
+                    Row(
+                      children: [
+                        // Vazgeç — outlined
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              Navigator.pop(context, false);
+                            },
+                            child: Container(
+                              height: 48,
+                              decoration: BoxDecoration(
+                                borderRadius:
+                                    BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: isDark
+                                      ? Colors.grey[700]!
+                                      : const Color(0xFFE5E5EA),
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  'Vazgeç',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: subColor,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        // Sil — red filled
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              HapticFeedback.heavyImpact();
+                              Navigator.pop(context, true);
+                            },
+                            child: Container(
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFF3B30),
+                                borderRadius:
+                                    BorderRadius.circular(14),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  'Sil',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ),
-            TextButton(
-              onPressed: () {
-                HapticFeedback.heavyImpact();
-                Navigator.pop(ctx, true);
-              },
-              child: Text(
-                'Sil',
-                style: GoogleFonts.poppins(
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFFFF3B30),
-                ),
-              ),
-            ),
-          ],
+          ),
         );
       },
     );
@@ -944,16 +1043,28 @@ class _HomeScreenState extends State<HomeScreen> {
     _storageService.deleteEvent(event.id);
     NotificationService().cancelEventNotification(event.id);
     HapticFeedback.mediumImpact();
-    ScaffoldMessenger.of(context).showSnackBar(
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.clearSnackBars();
+    messenger.showSnackBar(
       SnackBar(
         content: Text(
           '"${event.title}" silindi',
-          style: GoogleFonts.poppins(),
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Colors.white,
+          ),
         ),
+        duration: const Duration(seconds: 3),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        backgroundColor: const Color(0xE61C1C1E),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14)),
+        margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+        dismissDirection: DismissDirection.horizontal,
         action: SnackBarAction(
           label: 'Geri Al',
+          textColor: AppTheme.accent,
           onPressed: () {
             _storageService.addEvent(event);
             if (event.notificationEnabled) {

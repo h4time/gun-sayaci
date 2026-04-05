@@ -26,6 +26,9 @@ dependencies:
   share_plus: ^10.1.4
   url_launcher: ^6.3.1
   percent_indicator: ^4.2.5
+  package_info_plus: ^9.0.1
+  file_picker: ^11.0.1
+  path_provider: ^2.1.5
 
 dev_dependencies:
   flutter_test:
@@ -36,7 +39,7 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/icons/app_icon.png"
+  image_path: "assets/icons/app_icon_light.png"
   remove_alpha_ios: true
 
 flutter:
@@ -48,9 +51,9 @@ flutter:
     - assets/images/exam.jpg
     - assets/images/seyahat.jpg
     - assets/images/other.jpg
-    - assets/icons/app_icon.png
+    - assets/icons/app_icon_light.png
+    - assets/icons/app_icon_dark.png
     - assets/icons/cake.png
     - assets/icons/beach.png
     - assets/icons/task.png
     - assets/icons/travel-bag.png
-    - assets/icons/arka-plan-no.png

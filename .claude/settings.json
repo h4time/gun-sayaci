@@ -11,7 +11,9 @@
       "Bash(find /c/Users/USER/Desktop/countdown_app/ios/Runner -name \"*.entitlements\" -exec cat {} \\\\;)",
       "Bash(find /c/Users/USER/Desktop/countdown_app/assets -type f -exec du -h {} \\\\;)",
       "Bash(dart analyze:*)",
-      "Bash(dart pub:*)"
+      "Bash(dart pub:*)",
+      "Read(//c/Users/USER/AppData/Local/Pub/Cache/hosted/pub.dev/file_picker-11.0.1/lib/**)",
+      "Bash(ls c:/Users/USER/Desktop/countdown_app/android/app/src/main/res/mipmap-*/)"
     ]
   }
 }

@@ -37,4 +37,8 @@ class StorageService {
   EventModel? getEvent(String id) {
     return _box.get(id);
   }
+
+  Future<void> clearAll() async {
+    await _box.clear();
+  }
 }

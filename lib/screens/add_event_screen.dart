@@ -27,6 +27,40 @@ const Map<String, String> kCategoryEmojis = {
   'Diğer': '•••',
 };
 
+// Pastel backgrounds & text colors for wizard category cards
+const Map<String, Color> kCatBgLight = {
+  'Doğum Günü': Color(0xFFFCEBEB),
+  'Tatil': Color(0xFFE6F1FB),
+  'Düğün/Yıldönümü': Color(0xFFFBEAF0),
+  'Sınav/İş': Color(0xFFFAEEDA),
+  'Seyahat': Color(0xFFE1F5EE),
+  'Diğer': Color(0xFFF1EFE8),
+};
+const Map<String, Color> kCatTextLight = {
+  'Doğum Günü': Color(0xFF791F1F),
+  'Tatil': Color(0xFF0C447C),
+  'Düğün/Yıldönümü': Color(0xFF72243E),
+  'Sınav/İş': Color(0xFF633806),
+  'Seyahat': Color(0xFF085041),
+  'Diğer': Color(0xFF444441),
+};
+const Map<String, Color> kCatBgDark = {
+  'Doğum Günü': Color(0xFF501313),
+  'Tatil': Color(0xFF042C53),
+  'Düğün/Yıldönümü': Color(0xFF4B1528),
+  'Sınav/İş': Color(0xFF412402),
+  'Seyahat': Color(0xFF04342C),
+  'Diğer': Color(0xFF2C2C2A),
+};
+const Map<String, Color> kCatTextDark = {
+  'Doğum Günü': Color(0xFFF7C1C1),
+  'Tatil': Color(0xFFB5D4F4),
+  'Düğün/Yıldönümü': Color(0xFFF4C0D1),
+  'Sınav/İş': Color(0xFFFAC775),
+  'Seyahat': Color(0xFF9FE1CB),
+  'Diğer': Color(0xFFD3D1C7),
+};
+
 /// Entry point
 class AddEventSheet extends StatelessWidget {
   final EventModel? event;
@@ -52,7 +86,6 @@ class _WizardStep1State extends State<_WizardStep1> {
   final _controller = TextEditingController();
   static const int _maxLen = 25;
   String? _selectedCat;
-  bool _inputFocused = false;
 
   @override
   void dispose() {
@@ -69,9 +102,6 @@ class _WizardStep1State extends State<_WizardStep1> {
     final textColor = isDark ? Colors.white : AppTheme.primaryText;
     final fieldBg =
         isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF2F2F7);
-    final cardBg = isDark ? const Color(0xFF1C1C1E) : Colors.white;
-    final borderDefault =
-        isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0x14000000);
 
     return Scaffold(
       backgroundColor: isDark ? Colors.black : Colors.white,
@@ -115,50 +145,55 @@ class _WizardStep1State extends State<_WizardStep1> {
                     const SizedBox(height: 28),
 
                     // Input
-                    Focus(
-                      onFocusChange: (f) =>
-                          setState(() => _inputFocused = f),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: fieldBg,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: _inputFocused
-                                ? AppTheme.accent
-                                : Colors.transparent,
-                            width: 2,
-                          ),
+                    TextField(
+                      controller: _controller,
+                      maxLength: _maxLen,
+                      style: GoogleFonts.poppins(
+                        fontSize: 16,
+                        color: textColor,
+                      ),
+                      textCapitalization:
+                          TextCapitalization.sentences,
+                      autocorrect: false,
+                      enableSuggestions: true,
+                      onChanged: (_) => setState(() {}),
+                      decoration: InputDecoration(
+                        hintText: 'Etkinlik adı',
+                        hintStyle: GoogleFonts.poppins(
+                          fontSize: 16,
+                          color: const Color(0xFFAEAEB2),
                         ),
-                        child: TextField(
-                          controller: _controller,
-                          maxLength: _maxLen,
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            color: textColor,
-                          ),
-                          textCapitalization:
-                              TextCapitalization.sentences,
-                          autocorrect: false,
-                          enableSuggestions: true,
-                          onChanged: (_) => setState(() {}),
-                          decoration: InputDecoration(
-                            hintText: 'Etkinlik adı',
-                            hintStyle: GoogleFonts.poppins(
-                              fontSize: 16,
-                              color: const Color(0xFFAEAEB2),
-                            ),
-                            border: InputBorder.none,
-                            counterText: '',
-                            suffixText:
-                                '${_controller.text.length}/$_maxLen',
-                            suffixStyle: GoogleFonts.poppins(
-                              fontSize: 14,
-                              color: const Color(0xFFAEAEB2),
-                            ),
-                          ),
+                        prefixIcon: Icon(
+                          Icons.edit_outlined,
+                          size: 20,
+                          color: isDark
+                              ? Colors.grey[500]
+                              : AppTheme.secondaryText,
+                        ),
+                        counterText: '',
+                        suffixText:
+                            '${_controller.text.length}/$_maxLen',
+                        suffixStyle: GoogleFonts.poppins(
+                          fontSize: 14,
+                          color: const Color(0xFFAEAEB2),
+                        ),
+                        filled: true,
+                        fillColor: fieldBg,
+                        contentPadding:
+                            const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 16),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(18),
+                          borderSide: BorderSide.none,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(18),
+                          borderSide: BorderSide.none,
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(18),
+                          borderSide: const BorderSide(
+                              color: AppTheme.accent, width: 2),
                         ),
                       ),
                     ),
@@ -181,7 +216,7 @@ class _WizardStep1State extends State<_WizardStep1> {
                     ),
                     const SizedBox(height: 12),
 
-                    // Category grid — 2 columns
+                    // Category grid — 2 columns (pastel cards)
                     GridView.count(
                       crossAxisCount: 2,
                       shrinkWrap: true,
@@ -191,9 +226,17 @@ class _WizardStep1State extends State<_WizardStep1> {
                       childAspectRatio: 2.0,
                       children: EventModel.categories.map((cat) {
                         final isSelected = cat == _selectedCat;
-                        final color = kCategoryColors[cat] ??
-                            const Color(0xFF8E8E93);
                         final emoji = kCategoryEmojis[cat] ?? '📌';
+                        final bg = isDark
+                            ? (kCatBgDark[cat] ??
+                                const Color(0xFF2C2C2A))
+                            : (kCatBgLight[cat] ??
+                                const Color(0xFFF1EFE8));
+                        final catTextColor = isDark
+                            ? (kCatTextDark[cat] ??
+                                const Color(0xFFD3D1C7))
+                            : (kCatTextLight[cat] ??
+                                const Color(0xFF444441));
 
                         return GestureDetector(
                           onTap: () {
@@ -201,26 +244,25 @@ class _WizardStep1State extends State<_WizardStep1> {
                             setState(() => _selectedCat = cat);
                           },
                           child: AnimatedScale(
-                            scale: isSelected ? 1.02 : 1.0,
+                            scale: isSelected ? 0.97 : 1.0,
                             duration:
-                                const Duration(milliseconds: 200),
+                                const Duration(milliseconds: 150),
+                            curve: Curves.easeOut,
                             child: AnimatedContainer(
                               duration:
                                   const Duration(milliseconds: 200),
                               decoration: BoxDecoration(
-                                color: isSelected
-                                    ? color.withValues(alpha: 0.08)
-                                    : cardBg,
+                                color: bg,
                                 borderRadius:
-                                    BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: isSelected
-                                      ? color
-                                      : borderDefault,
-                                  width: isSelected ? 2 : 1,
-                                ),
+                                    BorderRadius.circular(18),
+                                border: isSelected
+                                    ? Border.all(
+                                        color: catTextColor,
+                                        width: 2.5)
+                                    : null,
                               ),
                               child: Stack(
+                                clipBehavior: Clip.none,
                                 children: [
                                   Center(
                                     child: Column(
@@ -230,7 +272,7 @@ class _WizardStep1State extends State<_WizardStep1> {
                                         Text(emoji,
                                             style:
                                                 const TextStyle(
-                                                    fontSize: 28)),
+                                                    fontSize: 32)),
                                         const SizedBox(height: 4),
                                         Text(
                                           cat,
@@ -239,7 +281,7 @@ class _WizardStep1State extends State<_WizardStep1> {
                                             fontSize: 13,
                                             fontWeight:
                                                 FontWeight.w500,
-                                            color: textColor,
+                                            color: catTextColor,
                                           ),
                                         ),
                                       ],
@@ -247,18 +289,18 @@ class _WizardStep1State extends State<_WizardStep1> {
                                   ),
                                   if (isSelected)
                                     Positioned(
-                                      top: 8,
-                                      right: 8,
+                                      top: 6,
+                                      right: 6,
                                       child: Container(
-                                        width: 20,
-                                        height: 20,
+                                        width: 18,
+                                        height: 18,
                                         decoration: BoxDecoration(
-                                          color: color,
+                                          color: catTextColor,
                                           shape: BoxShape.circle,
                                         ),
                                         child: const Icon(
-                                          Icons.check_rounded,
-                                          size: 14,
+                                          Icons.check,
+                                          size: 12,
                                           color: Colors.white,
                                         ),
                                       ),
@@ -313,13 +355,13 @@ class _WizardStep2 extends StatefulWidget {
 }
 
 class _WizardStep2State extends State<_WizardStep2> {
-  late int _day, _month, _year;
+  late DateTime _selectedDate;
+  late int _viewMonth;
+  late int _viewYear;
   String _repeatLabel = 'Asla';
   final _storageService = StorageService();
-
-  late FixedExtentScrollController _dayCtrl;
-  late FixedExtentScrollController _monthCtrl;
-  late FixedExtentScrollController _yearCtrl;
+  bool _slideForward = true;
+  int _slideKey = 0;
 
   static const _months = [
     'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
@@ -329,32 +371,47 @@ class _WizardStep2State extends State<_WizardStep2> {
     'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma',
     'Cumartesi', 'Pazar',
   ];
+  static const _dayHeaders = ['Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct', 'Pz'];
 
   @override
   void initState() {
     super.initState();
     final d = DateTime.now().add(const Duration(days: 7));
-    _day = d.day;
-    _month = d.month;
-    _year = d.year;
-    _dayCtrl = FixedExtentScrollController(initialItem: _day - 1);
-    _monthCtrl = FixedExtentScrollController(initialItem: _month - 1);
-    _yearCtrl = FixedExtentScrollController(initialItem: 0);
+    _selectedDate = DateTime(d.year, d.month, d.day);
+    _viewMonth = d.month;
+    _viewYear = d.year;
   }
 
-  @override
-  void dispose() {
-    _dayCtrl.dispose();
-    _monthCtrl.dispose();
-    _yearCtrl.dispose();
-    super.dispose();
-  }
+  DateTime get _date => _selectedDate;
 
   int _daysInMonth(int m, int y) => DateTime(y, m + 1, 0).day;
 
-  DateTime get _date {
-    final maxD = _daysInMonth(_month, _year);
-    return DateTime(_year, _month, _day.clamp(1, maxD));
+  void _prevMonth() {
+    HapticFeedback.selectionClick();
+    setState(() {
+      _slideForward = false;
+      _slideKey++;
+      if (_viewMonth == 1) {
+        _viewMonth = 12;
+        _viewYear--;
+      } else {
+        _viewMonth--;
+      }
+    });
+  }
+
+  void _nextMonth() {
+    HapticFeedback.selectionClick();
+    setState(() {
+      _slideForward = true;
+      _slideKey++;
+      if (_viewMonth == 12) {
+        _viewMonth = 1;
+        _viewYear++;
+      } else {
+        _viewMonth++;
+      }
+    });
   }
 
   @override
@@ -364,11 +421,10 @@ class _WizardStep2State extends State<_WizardStep2> {
     final cardBg = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final secondaryColor =
         isDark ? Colors.grey[400]! : AppTheme.secondaryText;
-    final highlightBg =
-        isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFF2F2F7);
-    final unselectedText =
-        isDark ? Colors.grey[600]! : const Color(0xFFAEAEB2);
-    final d = _date;
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.1)
+        : Colors.grey.shade200;
+    final today = DateTime.now();
 
     return Scaffold(
       backgroundColor: isDark ? Colors.black : Colors.white,
@@ -393,154 +449,176 @@ class _WizardStep2State extends State<_WizardStep2> {
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 32),
 
-                    // Big title
+                    // Big title — matches Step 1
                     Text(
-                      'Tarihi belirle',
+                      'Büyük günü\nseç!',
+                      textAlign: TextAlign.center,
                       style: GoogleFonts.poppins(
-                        fontSize: 28,
+                        fontSize: 30,
                         fontWeight: FontWeight.w700,
                         color: textColor,
                         letterSpacing: -0.5,
+                        height: 1.15,
                       ),
                     ),
 
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 28),
 
-                    // === CARD 1: Date picker ===
+                    // === Calendar Card ===
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(24),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 14),
                       decoration: BoxDecoration(
                         color: cardBg,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.06),
-                            blurRadius: 12,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: borderColor, width: 1),
                       ),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Selected date
-                          Text(
-                            '${d.day} ${_months[d.month - 1]} ${d.year}',
-                            style: GoogleFonts.poppins(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w700,
-                              color: textColor,
-                              letterSpacing: -0.3,
-                            ),
-                          ),
-                          Text(
-                            _dayNames[d.weekday - 1],
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w400,
-                              color: secondaryColor,
-                            ),
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          // Picker wheels
-                          SizedBox(
-                            height: 180,
-                            child: Stack(
-                              children: [
-                                // Highlight bar
-                                Center(
-                                  child: Container(
-                                    height: 40,
-                                    decoration: BoxDecoration(
-                                      color: highlightBg,
-                                      borderRadius:
-                                          BorderRadius.circular(10),
+                          // Month navigation
+                          Row(
+                            children: [
+                              GestureDetector(
+                                onTap: _prevMonth,
+                                child: Tooltip(
+                                  message: 'Önceki ay',
+                                  child: Icon(
+                                      Icons.chevron_left_rounded,
+                                      size: 28,
+                                      color: textColor),
+                                ),
+                              ),
+                              const Spacer(),
+                              AnimatedSwitcher(
+                                duration:
+                                    const Duration(milliseconds: 200),
+                                transitionBuilder:
+                                    (child, animation) {
+                                  final offset = _slideForward
+                                      ? const Offset(0.3, 0)
+                                      : const Offset(-0.3, 0);
+                                  return SlideTransition(
+                                    position: Tween<Offset>(
+                                      begin: offset,
+                                      end: Offset.zero,
+                                    ).animate(animation),
+                                    child: FadeTransition(
+                                      opacity: animation,
+                                      child: child,
                                     ),
+                                  );
+                                },
+                                child: Text(
+                                  '${_months[_viewMonth - 1]} $_viewYear',
+                                  key: ValueKey(
+                                      '$_viewMonth-$_viewYear'),
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: textColor,
                                   ),
                                 ),
-                                Row(
-                                  children: [
-                                    _wheel(
-                                      ctrl: _dayCtrl,
-                                      count: _daysInMonth(
-                                          _month, _year),
-                                      label: (i) => '${i + 1}',
-                                      onChanged: (i) {
-                                        HapticFeedback
-                                            .selectionClick();
-                                        setState(
-                                            () => _day = i + 1);
-                                      },
-                                      selected: _day - 1,
-                                      textColor: textColor,
-                                      dimColor: unselectedText,
-                                    ),
-                                    _wheel(
-                                      ctrl: _monthCtrl,
-                                      count: 12,
-                                      label: (i) => _months[i],
-                                      onChanged: (i) {
-                                        HapticFeedback
-                                            .selectionClick();
-                                        setState(
-                                            () => _month = i + 1);
-                                      },
-                                      selected: _month - 1,
-                                      textColor: textColor,
-                                      dimColor: unselectedText,
-                                    ),
-                                    _wheel(
-                                      ctrl: _yearCtrl,
-                                      count: 11,
-                                      label: (i) =>
-                                          '${DateTime.now().year + i}',
-                                      onChanged: (i) {
-                                        HapticFeedback
-                                            .selectionClick();
-                                        setState(() => _year =
-                                            DateTime.now().year +
-                                                i);
-                                      },
-                                      selected: _year -
-                                          DateTime.now().year,
-                                      textColor: textColor,
-                                      dimColor: unselectedText,
-                                    ),
-                                  ],
+                              ),
+                              const Spacer(),
+                              GestureDetector(
+                                onTap: _nextMonth,
+                                child: Tooltip(
+                                  message: 'Sonraki ay',
+                                  child: Icon(
+                                      Icons.chevron_right_rounded,
+                                      size: 28,
+                                      color: textColor),
                                 ),
-                              ],
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          // Day headers
+                          Row(
+                            children: _dayHeaders
+                                .map((h) => Expanded(
+                                      child: Center(
+                                        child: Text(
+                                          h,
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 12,
+                                            fontWeight:
+                                                FontWeight.w500,
+                                            color: secondaryColor,
+                                          ),
+                                        ),
+                                      ),
+                                    ))
+                                .toList(),
+                          ),
+
+                          const SizedBox(height: 8),
+
+                          // Day grid with slide animation
+                          AnimatedSwitcher(
+                            duration:
+                                const Duration(milliseconds: 200),
+                            transitionBuilder:
+                                (child, animation) {
+                              final offset = _slideForward
+                                  ? const Offset(0.15, 0)
+                                  : const Offset(-0.15, 0);
+                              return SlideTransition(
+                                position: Tween<Offset>(
+                                  begin: offset,
+                                  end: Offset.zero,
+                                ).animate(CurvedAnimation(
+                                  parent: animation,
+                                  curve: Curves.easeInOut,
+                                )),
+                                child: FadeTransition(
+                                  opacity: animation,
+                                  child: child,
+                                ),
+                              );
+                            },
+                            child: _buildDayGrid(
+                              key: ValueKey(_slideKey),
+                              textColor: textColor,
+                              secondaryColor: secondaryColor,
+                              today: today,
+                              isDark: isDark,
                             ),
                           ),
                         ],
                       ),
                     ),
 
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 10),
 
-                    // === CARD 2: Options ===
+                    // Selected date summary
+                    Text(
+                      '${_selectedDate.day} ${_months[_selectedDate.month - 1]} ${_selectedDate.year}, ${_dayNames[_selectedDate.weekday - 1]}',
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: secondaryColor,
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    // === Repeat Card ===
                     Container(
                       width: double.infinity,
                       decoration: BoxDecoration(
                         color: cardBg,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.06),
-                            blurRadius: 12,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: borderColor, width: 1),
                       ),
                       child: Column(
                         children: [
-                          // Repeats
                           GestureDetector(
                             onTap: () => _showRepeatSheet(isDark,
                                 textColor, secondaryColor),
@@ -606,41 +684,89 @@ class _WizardStep2State extends State<_WizardStep2> {
     );
   }
 
-  Expanded _wheel({
-    required FixedExtentScrollController ctrl,
-    required int count,
-    required String Function(int) label,
-    required ValueChanged<int> onChanged,
-    required int selected,
+  Widget _buildDayGrid({
+    required Key key,
     required Color textColor,
-    required Color dimColor,
+    required Color secondaryColor,
+    required DateTime today,
+    required bool isDark,
   }) {
-    return Expanded(
-      child: ListWheelScrollView.useDelegate(
-        controller: ctrl,
-        itemExtent: 40,
-        perspective: 0.003,
-        diameterRatio: 1.4,
-        physics: const FixedExtentScrollPhysics(),
-        onSelectedItemChanged: onChanged,
-        childDelegate: ListWheelChildBuilderDelegate(
-          childCount: count,
-          builder: (context, index) {
-            final isSel = index == selected;
-            return Center(
-              child: Text(
-                label(index),
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight:
-                      isSel ? FontWeight.w600 : FontWeight.w400,
-                  color: isSel ? textColor : dimColor,
+    final daysInMonth = _daysInMonth(_viewMonth, _viewYear);
+    // weekday: 1=Mon ... 7=Sun
+    final firstWeekday = DateTime(_viewYear, _viewMonth, 1).weekday;
+    final offset = firstWeekday - 1; // blanks before day 1
+    final totalCells = offset + daysInMonth;
+    final rows = (totalCells / 7).ceil();
+
+    return Column(
+      key: key,
+      children: List.generate(rows, (row) {
+        return Row(
+          children: List.generate(7, (col) {
+            final cellIndex = row * 7 + col;
+            final dayNum = cellIndex - offset + 1;
+
+            if (cellIndex < offset || dayNum > daysInMonth) {
+              return const Expanded(child: SizedBox(height: 40));
+            }
+
+            final cellDate =
+                DateTime(_viewYear, _viewMonth, dayNum);
+            final isToday = cellDate.year == today.year &&
+                cellDate.month == today.month &&
+                cellDate.day == today.day;
+            final isSelected =
+                cellDate.year == _selectedDate.year &&
+                    cellDate.month == _selectedDate.month &&
+                    cellDate.day == _selectedDate.day;
+
+            return Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  setState(() => _selectedDate = cellDate);
+                },
+                child: Semantics(
+                  label:
+                      '$dayNum ${_months[_viewMonth - 1]} $_viewYear, ${_dayNames[cellDate.weekday - 1]}',
+                  child: Container(
+                    height: 40,
+                    margin: const EdgeInsets.all(1),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? (isDark
+                              ? Colors.white
+                              : AppTheme.primaryText)
+                          : Colors.transparent,
+                      shape: BoxShape.circle,
+                      border: isToday && !isSelected
+                          ? Border.all(
+                              color: AppTheme.accent, width: 1.5)
+                          : null,
+                    ),
+                    child: Center(
+                      child: Text(
+                        '$dayNum',
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: isSelected
+                              ? FontWeight.w600
+                              : FontWeight.w400,
+                          color: isSelected
+                              ? (isDark
+                                  ? Colors.black
+                                  : Colors.white)
+                              : textColor,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             );
-          },
-        ),
-      ),
+          }),
+        );
+      }),
     );
   }
 
