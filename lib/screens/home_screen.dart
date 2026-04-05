@@ -50,6 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
     'Seyahat',
     'Konser/Etkinlik',
     'Spor/Hedef',
+    'Diğer',
   ];
 
   @override
@@ -65,7 +66,11 @@ class _HomeScreenState extends State<HomeScreen> {
               builder: (context, Box<EventModel> box, _) {
                 var allEvents = _storageService.getAllEvents();
 
-                if (_selectedCategory != 'Tümü') {
+                if (_selectedCategory == 'Diğer') {
+                  allEvents = allEvents
+                      .where((e) => EventModel.isCustomCategory(e.category))
+                      .toList();
+                } else if (_selectedCategory != 'Tümü') {
                   allEvents = allEvents
                       .where((e) => e.category == _selectedCategory)
                       .toList();
