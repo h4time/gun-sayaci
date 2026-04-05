@@ -58,101 +58,105 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            Column(
-              children: [
-                _buildHeader(isDark),
-                Expanded(
-                  child: ValueListenableBuilder(
-                    valueListenable: _storageService.box.listenable(),
-                    builder: (context, Box<EventModel> box, _) {
-                      var allEvents = _storageService.getAllEvents();
+            Positioned.fill(
+              child: ValueListenableBuilder(
+              valueListenable: _storageService.box.listenable(),
+              builder: (context, Box<EventModel> box, _) {
+                var allEvents = _storageService.getAllEvents();
 
-                      if (_selectedCategory != 'Tümü') {
-                        allEvents = allEvents
-                            .where((e) => e.category == _selectedCategory)
-                            .toList();
-                      }
+                if (_selectedCategory != 'Tümü') {
+                  allEvents = allEvents
+                      .where((e) => e.category == _selectedCategory)
+                      .toList();
+                }
 
-                      final upcoming = allEvents
-                          .where((e) => !e.isExpired || e.isToday)
-                          .toList();
-                      final past = allEvents
-                          .where((e) => e.isExpired && !e.isToday)
-                          .toList()
-                        ..sort(
-                            (a, b) => b.targetDate.compareTo(a.targetDate));
+                final upcoming = allEvents
+                    .where((e) => !e.isExpired || e.isToday)
+                    .toList();
+                final past = allEvents
+                    .where((e) => e.isExpired && !e.isToday)
+                    .toList()
+                  ..sort(
+                      (a, b) => b.targetDate.compareTo(a.targetDate));
 
-                      final events = _selectedTab == 1 ? upcoming : past;
-                      final isPast = _selectedTab == 0;
+                final events = _selectedTab == 1 ? upcoming : past;
+                final isPast = _selectedTab == 0;
 
-                      if (events.isEmpty) {
-                        return _buildEmptyState(isDark, isPast);
-                      }
+                if (events.isEmpty) {
+                  return Column(
+                    children: [
+                      _buildHeader(isDark),
+                      Expanded(child: _buildEmptyState(isDark, isPast)),
+                    ],
+                  );
+                }
 
-                      return ListView.builder(
-                        physics: const BouncingScrollPhysics(),
-                        padding: const EdgeInsets.only(top: 8, bottom: 120),
-                        itemCount: events.length,
-                        itemBuilder: (context, index) {
-                          final event = events[index];
-                          return Dismissible(
-                            key: Key(event.id),
-                            direction: DismissDirection.horizontal,
-                            confirmDismiss: (direction) async {
-                              if (direction ==
-                                  DismissDirection.endToStart) {
-                                // Left swipe → delete with confirm
-                                HapticFeedback.mediumImpact();
-                                return await _showDeleteConfirm(event);
-                              } else {
-                                // Right swipe → edit
-                                HapticFeedback.mediumImpact();
-                                _showEditEventSheet(event);
-                                return false;
-                              }
-                            },
-                            onDismissed: (_) => _deleteEvent(event),
-                            background: Container(
-                              alignment: Alignment.centerLeft,
-                              padding: const EdgeInsets.only(left: 32),
-                              margin: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 7),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF007AFF),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: const Icon(Icons.edit_rounded,
-                                  color: Colors.white, size: 24),
-                            ),
-                            secondaryBackground: Container(
-                              alignment: Alignment.centerRight,
-                              padding: const EdgeInsets.only(right: 32),
-                              margin: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 7),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFF3B30),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: const Icon(Icons.delete_rounded,
-                                  color: Colors.white, size: 24),
-                            ),
-                            child: CountdownCard(
-                              event: event,
-                              onTap: () => _navigateToDetail(event),
-                              onDelete: () => _deleteEvent(event),
-                              onEdit: () => _showEditEventSheet(event),
-                              isPastView: isPast,
-                            ),
-                          ).animate().fadeIn(
-                                duration: 400.ms,
-                                delay: (index * 60).ms,
-                              );
-                        },
-                      );
-                    },
-                  ),
-                ),
-              ],
+                return ListView.builder(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.only(bottom: 120),
+                  itemCount: events.length + 1, // +1 for header
+                  itemBuilder: (context, index) {
+                    // First item is the header
+                    if (index == 0) {
+                      return _buildHeader(isDark);
+                    }
+
+                    final eventIndex = index - 1;
+                    final event = events[eventIndex];
+                    return Dismissible(
+                      key: Key(event.id),
+                      direction: DismissDirection.horizontal,
+                      confirmDismiss: (direction) async {
+                        if (direction ==
+                            DismissDirection.endToStart) {
+                          HapticFeedback.mediumImpact();
+                          return await _showDeleteConfirm(event);
+                        } else {
+                          HapticFeedback.mediumImpact();
+                          _showEditEventSheet(event);
+                          return false;
+                        }
+                      },
+                      onDismissed: (_) => _deleteEvent(event),
+                      background: Container(
+                        alignment: Alignment.centerLeft,
+                        padding: const EdgeInsets.only(left: 32),
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 7),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF007AFF),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Icon(Icons.edit_rounded,
+                            color: Colors.white, size: 24),
+                      ),
+                      secondaryBackground: Container(
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.only(right: 32),
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 7),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFF3B30),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Icon(Icons.delete_rounded,
+                            color: Colors.white, size: 24),
+                      ),
+                      child: CountdownCard(
+                        event: event,
+                        onTap: () => _navigateToDetail(event),
+                        onDelete: () => _deleteEvent(event),
+                        onEdit: () => _showEditEventSheet(event),
+                        isPastView: isPast,
+                      ),
+                    ).animate().fadeIn(
+                          duration: 400.ms,
+                          delay: (eventIndex * 60).ms,
+                        );
+                  },
+                );
+              },
+            ),
             ),
 
             // Floating bottom toggle
@@ -232,7 +236,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               child: Text(
                 _selectedCategory == 'Tümü'
-                    ? '#ozelgunleriunutma'
+                    ? 'Tüm Etkinlikler'
                     : _selectedCategory,
                 style: GoogleFonts.poppins(
                   fontSize: 15,
@@ -298,32 +302,21 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // === FLOATING TOGGLE ===
+  // === FLOATING TOGGLE (Days style — semi-transparent pill) ===
   Widget _buildFloatingToggle(bool isDark) {
-    final bgColor = isDark ? AppTheme.surfaceDark : Colors.white;
-    final borderColor =
-        isDark ? Colors.white.withValues(alpha: 0.1) : AppTheme.cardBorder;
-    final shadowColor =
-        isDark ? Colors.black.withValues(alpha: 0.3) : AppTheme.buttonShadow;
-    final selectedText = isDark ? Colors.white : Colors.white;
     final selectedBg =
-        isDark ? Colors.white.withValues(alpha: 0.15) : AppTheme.primaryText;
+        isDark ? Colors.white.withValues(alpha: 0.18) : AppTheme.primaryText;
+    final selectedText = Colors.white;
     final unselectedText =
         isDark ? Colors.grey[500]! : AppTheme.secondaryText;
 
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: borderColor, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: shadowColor,
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        color: isDark
+            ? Colors.black.withValues(alpha: 0.65)
+            : Colors.white.withValues(alpha: 0.85),
+        borderRadius: BorderRadius.circular(28),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -386,90 +379,195 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // === CATEGORY BOTTOM SHEET ===
+  // === CATEGORY FULL PAGE (Days style) ===
   void _showCategorySheet(bool isDark) {
     HapticFeedback.selectionClick();
-    final bgColor = isDark ? AppTheme.surfaceDark : Colors.white;
-    final textColor = isDark ? Colors.white : AppTheme.primaryText;
-    final secondaryColor =
-        isDark ? Colors.grey[400]! : AppTheme.secondaryText;
 
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return Container(
-          decoration: BoxDecoration(
-            color: bgColor,
-            borderRadius:
-                const BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Center(
-                child: Container(
-                  margin: const EdgeInsets.symmetric(vertical: 12),
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[400],
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Kategori Seçin',
-                    style: GoogleFonts.poppins(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: textColor,
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) {
+          final pageBg =
+              isDark ? const Color(0xFF000000) : const Color(0xFFF5F5F0);
+          final cardBg = isDark ? AppTheme.surfaceDark : Colors.white;
+          final textColor = isDark ? Colors.white : AppTheme.primaryText;
+          final secondaryColor =
+              isDark ? Colors.grey[400]! : AppTheme.secondaryText;
+          final pillBg = isDark
+              ? Colors.white.withValues(alpha: 0.12)
+              : AppTheme.primaryText;
+
+          return Scaffold(
+            backgroundColor: pageBg,
+            body: SafeArea(
+              child: Column(
+                children: [
+                  // Header: X + "Kategori Seçin" pill + "+"
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+                    child: Row(
+                      children: [
+                        // X close button
+                        GestureDetector(
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            Navigator.pop(context);
+                          },
+                          child: Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: pillBg,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.close_rounded,
+                                size: 22, color: Colors.white),
+                          ),
+                        ),
+                        const Spacer(),
+                        // "Kategori Seçin" dark pill
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: pillBg,
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          child: Text(
+                            'Kategori Seçin',
+                            style: GoogleFonts.poppins(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.5,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        const Spacer(),
+                        // + button
+                        GestureDetector(
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            Navigator.pop(context);
+                            _showAddEventSheet();
+                          },
+                          child: Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: pillBg,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.add,
+                                size: 22, color: Colors.white),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-              ),
-              ..._filters.map((filter) {
-                final isSelected = filter == _selectedCategory;
-                return ListTile(
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 24),
-                  leading: Icon(
-                    filter == 'Tümü'
-                        ? Icons.grid_view_rounded
-                        : AppTheme.getFallbackIconForCategory(filter),
-                    color: isSelected ? AppTheme.accent : secondaryColor,
-                    size: 22,
-                  ),
-                  title: Text(
-                    filter == 'Tümü' ? 'Tüm Etkinlikler' : filter,
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight:
-                          isSelected ? FontWeight.w600 : FontWeight.w400,
-                      color: isSelected ? textColor : secondaryColor,
+
+                  // Category list
+                  Expanded(
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: _filters.length,
+                      itemBuilder: (context, index) {
+                        final filter = _filters[index];
+                        final isSelected = filter == _selectedCategory;
+                        final label = filter == 'Tümü'
+                            ? 'Tüm Etkinlikler'
+                            : filter;
+
+                        // "Tüm Etkinlikler" gets a white card (Days style)
+                        if (filter == 'Tümü') {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: GestureDetector(
+                              onTap: () {
+                                HapticFeedback.selectionClick();
+                                setState(
+                                    () => _selectedCategory = filter);
+                                Navigator.pop(context);
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 16),
+                                decoration: BoxDecoration(
+                                  color: cardBg,
+                                  borderRadius:
+                                      BorderRadius.circular(16),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      label,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 16,
+                                        fontWeight: isSelected
+                                            ? FontWeight.w600
+                                            : FontWeight.w400,
+                                        color: textColor,
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    if (isSelected)
+                                      Icon(Icons.check_rounded,
+                                          color: AppTheme.accent,
+                                          size: 22),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+
+                        // Other categories — simple text rows
+                        return GestureDetector(
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            setState(
+                                () => _selectedCategory = filter);
+                            Navigator.pop(context);
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 14),
+                            child: Row(
+                              children: [
+                                Text(
+                                  label,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 16,
+                                    fontWeight: isSelected
+                                        ? FontWeight.w600
+                                        : FontWeight.w400,
+                                    color: isSelected
+                                        ? textColor
+                                        : secondaryColor,
+                                  ),
+                                ),
+                                const Spacer(),
+                                if (isSelected)
+                                  Icon(Icons.check_rounded,
+                                      color: AppTheme.accent,
+                                      size: 22),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
-                  trailing: isSelected
-                      ? Icon(Icons.check_rounded,
-                          color: AppTheme.accent, size: 22)
-                      : null,
-                  onTap: () {
-                    HapticFeedback.selectionClick();
-                    setState(() => _selectedCategory = filter);
-                    Navigator.pop(context);
-                  },
-                );
-              }),
-              const SizedBox(height: 24),
-            ],
-          ),
-        );
-      },
+                ],
+              ),
+            ),
+          );
+        },
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        transitionDuration: const Duration(milliseconds: 300),
+        reverseTransitionDuration: const Duration(milliseconds: 250),
+      ),
     );
   }
 
@@ -643,7 +741,7 @@ class _HomeScreenState extends State<HomeScreen> {
         transitionDuration: const Duration(milliseconds: 350),
         reverseTransitionDuration: const Duration(milliseconds: 300),
       ),
-    );
+    ).then((_) => _resetCategory());
   }
 
   Widget _buildSettingsCard({
@@ -817,25 +915,29 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // === NAVIGATION ===
+  void _resetCategory() {
+    if (mounted) setState(() => _selectedCategory = 'Tümü');
+  }
+
   void _navigateToDetail(EventModel event) {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => EventDetailScreen(event: event)),
-    );
+    ).then((_) => _resetCategory());
   }
 
   void _showAddEventSheet() {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const AddEventSheet()),
-    );
+    ).then((_) => _resetCategory());
   }
 
   void _showEditEventSheet(EventModel event) {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => AddEventSheet(event: event)),
-    );
+    ).then((_) => _resetCategory());
   }
 
   void _deleteEvent(EventModel event) {

@@ -1,8 +1,8 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:percent_indicator/circular_percent_indicator.dart';
 import '../models/event_model.dart';
 import '../theme/app_theme.dart';
 
@@ -26,11 +26,8 @@ class CountdownCard extends StatefulWidget {
   State<CountdownCard> createState() => _CountdownCardState();
 }
 
-class _CountdownCardState extends State<CountdownCard>
-    with SingleTickerProviderStateMixin {
+class _CountdownCardState extends State<CountdownCard> {
   bool _pressed = false;
-  late AnimationController _progressCtrl;
-  late Animation<double> _progressAnim;
 
   static const Map<String, Color> _categoryColors = {
     'Doğum Günü': Color(0xFFFF4B77),
@@ -63,45 +60,8 @@ class _CountdownCardState extends State<CountdownCard>
     final days = widget.event.daysRemaining;
     if (widget.event.isToday) return 1.0;
     if (widget.isPastView || widget.event.isExpired) return 1.0;
-    if (days >= 365) return 0.03; // minimum so ring isn't empty
+    if (days >= 365) return 0.03;
     return ((365 - days) / 365).clamp(0.03, 1.0);
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _progressCtrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 800),
-    );
-    final target = _calc365Progress();
-    _progressAnim = Tween<double>(begin: 0, end: target).animate(
-      CurvedAnimation(parent: _progressCtrl, curve: Curves.easeOutCubic),
-    );
-    _progressCtrl.forward();
-  }
-
-  @override
-  void didUpdateWidget(covariant CountdownCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.event.daysRemaining != widget.event.daysRemaining) {
-      final target = _calc365Progress();
-      _progressAnim = Tween<double>(
-        begin: _progressAnim.value,
-        end: target,
-      ).animate(
-        CurvedAnimation(parent: _progressCtrl, curve: Curves.easeOutCubic),
-      );
-      _progressCtrl
-        ..reset()
-        ..forward();
-    }
-  }
-
-  @override
-  void dispose() {
-    _progressCtrl.dispose();
-    super.dispose();
   }
 
   void _onTapDown(TapDownDetails _) => setState(() => _pressed = true);
@@ -118,7 +78,7 @@ class _CountdownCardState extends State<CountdownCard>
     final catEmoji = _categoryEmojis[widget.event.category] ?? '📌';
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       child: AnimatedScale(
         scale: _pressed ? 0.97 : 1.0,
         duration: Duration(milliseconds: _pressed ? 150 : 250),
@@ -156,7 +116,7 @@ class _CountdownCardState extends State<CountdownCard>
             child: Opacity(
               opacity: isPast ? 0.7 : 1.0,
               child: SizedBox(
-                height: 190,
+                height: 260,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(20),
                   child: Stack(
@@ -195,7 +155,7 @@ class _CountdownCardState extends State<CountdownCard>
                         bottom: 0,
                         left: 0,
                         right: 0,
-                        height: 190 * 0.55,
+                        height: 260 * 0.60,
                         child: Container(
                           decoration: const BoxDecoration(
                             gradient: LinearGradient(
@@ -203,7 +163,7 @@ class _CountdownCardState extends State<CountdownCard>
                               end: Alignment.bottomCenter,
                               colors: [
                                 Color(0x00000000),
-                                Color(0x8C000000),
+                                Color(0xB3000000),
                               ],
                             ),
                           ),
@@ -349,93 +309,55 @@ class _CountdownCardState extends State<CountdownCard>
       labelText = 'GÜN';
     }
 
-    final ringColor = isToday
-        ? const Color(0xFFFFD700)
-        : isPast
-            ? const Color(0x99FFFFFF)
-            : catColor;
+    final percent = _calc365Progress();
+    const progressColor = AppTheme.accent;
 
-    return AnimatedBuilder(
-      animation: _progressAnim,
-      builder: (context, child) {
-        return SizedBox(
-          width: 56,
-          height: 56,
-          child: Stack(
-            alignment: Alignment.center,
+    return Container(
+      width: 58,
+      height: 58,
+      decoration: const BoxDecoration(
+        color: Color(0x55000000),
+        shape: BoxShape.circle,
+      ),
+      child: Center(
+        child: CircularPercentIndicator(
+          radius: 27.0,
+          lineWidth: 2.5,
+          percent: percent,
+          animation: true,
+          animationDuration: 800,
+          circularStrokeCap: CircularStrokeCap.round,
+          progressColor: isToday
+              ? const Color(0xFFFFD700)
+              : isPast
+                  ? const Color(0x99FFFFFF)
+                  : progressColor,
+          backgroundColor: const Color(0x26FFFFFF),
+          center: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Glow (stronger on today)
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: ringColor.withValues(
-                          alpha: isToday ? 0.6 : 0.35),
-                      blurRadius: isToday ? 12 : 8,
-                    ),
-                  ],
+              Text(
+                countText,
+                style: GoogleFonts.poppins(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                  height: 1.1,
                 ),
               ),
-              // Progress ring
-              SizedBox(
-                width: 56,
-                height: 56,
-                child: CircularProgressIndicator(
-                  value: _progressAnim.value,
-                  strokeWidth: 3,
-                  backgroundColor: const Color(0x33FFFFFF),
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(ringColor),
-                ),
-              ),
-              // Inner circle
-              ClipOval(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                  child: Container(
-                    width: 46,
-                    height: 46,
-                    decoration: BoxDecoration(
-                      color: const Color(0x33FFFFFF),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: const Color(0x4DFFFFFF),
-                        width: 1,
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          countText,
-                          style: GoogleFonts.poppins(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                            height: 1.1,
-                          ),
-                        ),
-                        Text(
-                          labelText,
-                          style: GoogleFonts.poppins(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xB3FFFFFF),
-                            height: 1.0,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+              Text(
+                labelText,
+                style: GoogleFonts.poppins(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xB3FFFFFF),
+                  height: 1.0,
                 ),
               ),
             ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 

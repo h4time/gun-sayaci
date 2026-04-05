@@ -9,7 +9,9 @@
       "Bash(xargs grep:*)",
       "Bash(ls /c/Users/USER/Desktop/countdown_app/android/app/src/main/res/drawable*/)",
       "Bash(find /c/Users/USER/Desktop/countdown_app/ios/Runner -name \"*.entitlements\" -exec cat {} \\\\;)",
-      "Bash(find /c/Users/USER/Desktop/countdown_app/assets -type f -exec du -h {} \\\\;)"
+      "Bash(find /c/Users/USER/Desktop/countdown_app/assets -type f -exec du -h {} \\\\;)",
+      "Bash(dart analyze:*)",
+      "Bash(dart pub:*)"
     ]
   }
 }

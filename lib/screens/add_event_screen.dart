@@ -314,7 +314,6 @@ class _WizardStep2 extends StatefulWidget {
 
 class _WizardStep2State extends State<_WizardStep2> {
   late int _day, _month, _year;
-  bool _allDay = true;
   String _repeatLabel = 'Asla';
   final _storageService = StorageService();
 
@@ -369,8 +368,6 @@ class _WizardStep2State extends State<_WizardStep2> {
         isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFF2F2F7);
     final unselectedText =
         isDark ? Colors.grey[600]! : const Color(0xFFAEAEB2);
-    final dividerColor =
-        isDark ? Colors.white.withValues(alpha: 0.06) : const Color(0xFFF2F2F7);
     final d = _date;
 
     return Scaffold(
@@ -543,47 +540,6 @@ class _WizardStep2State extends State<_WizardStep2> {
                       ),
                       child: Column(
                         children: [
-                          // All Day
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 24),
-                            child: SizedBox(
-                              height: 52,
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      'Tüm Gün',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 16,
-                                        color: textColor,
-                                      ),
-                                    ),
-                                  ),
-                                  CupertinoSwitch(
-                                    value: _allDay,
-                                    onChanged: (v) {
-                                      HapticFeedback
-                                          .selectionClick();
-                                      setState(
-                                          () => _allDay = v);
-                                    },
-                                    activeTrackColor:
-                                        AppTheme.accent,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 24),
-                            child: Divider(
-                                height: 1,
-                                color: dividerColor),
-                          ),
-
                           // Repeats
                           GestureDetector(
                             onTap: () => _showRepeatSheet(isDark,
