@@ -17,6 +17,7 @@ import '../services/notification_service.dart';
 import '../models/event_model.dart';
 import '../theme/app_theme.dart';
 import 'event_size_screen.dart';
+import 'app_icon_screen.dart';
 
 class PreferencesScreen extends StatefulWidget {
   const PreferencesScreen({super.key});
@@ -31,6 +32,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
   int _notifHour = 9;
   int _notifMinute = 0;
   String _cardSize = 'large';
+  String _selectedIcon = 'primary';
 
   @override
   void initState() {
@@ -38,15 +40,31 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
     _loadPrefs();
   }
 
+  static const _iconPreviewAssets = {
+    'primary': 'assets/icons/icon_white.png',
+    'IconDark': 'assets/icons/icon_dark.png',
+    'IconPinkPurple': 'assets/icons/icon_pink_purple.png',
+    'IconPink': 'assets/icons/icon_pink.png',
+    'IconAmber': 'assets/icons/icon_amber.png',
+    'IconMint': 'assets/icons/icon_mint.png',
+    'IconBlue': 'assets/icons/icon_blue.png',
+    'IconOrange': 'assets/icons/icon_orange_bold.png',
+    'IconLavender': 'assets/icons/icon_lavender.png',
+    'IconParty': 'assets/icons/icon_party.png',
+    'IconTeal': 'assets/icons/icon_teal_calendar.png',
+  };
+
   Future<void> _loadPrefs() async {
     final (hour, minute) = await NotificationService().getNotificationTime();
     final prefs = await SharedPreferences.getInstance();
     final size = prefs.getString('eventCardSize') ?? 'large';
+    final icon = prefs.getString('selectedAppIcon') ?? 'primary';
     if (mounted) {
       setState(() {
         _notifHour = hour;
         _notifMinute = minute;
         _cardSize = size;
+        _selectedIcon = icon;
       });
     }
   }
@@ -658,6 +676,58 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                           _loadPrefs();
                         },
                       ),
+
+                      if (Platform.isIOS) ...[
+                        const SizedBox(height: 8),
+                        GestureDetector(
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) =>
+                                      const AppIconScreen()),
+                            ).then((_) => _loadPrefs());
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 20, vertical: 18),
+                            decoration: BoxDecoration(
+                              color: cardBg,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Row(
+                              children: [
+                                ClipRRect(
+                                  borderRadius:
+                                      BorderRadius.circular(8),
+                                  child: Image.asset(
+                                    _iconPreviewAssets[_selectedIcon] ??
+                                        'assets/icons/icon_white.png',
+                                    width: 32,
+                                    height: 32,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Text(
+                                    'Uygulama İkonu',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                      color: textColor,
+                                    ),
+                                  ),
+                                ),
+                                Icon(Icons.chevron_right_rounded,
+                                    size: 22,
+                                    color: secondaryColor),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
 
                       const SizedBox(height: 24),
 
