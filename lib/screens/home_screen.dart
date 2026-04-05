@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
 import '../models/event_model.dart';
 import '../services/storage_service.dart';
 import '../services/notification_service.dart';
-import '../providers/theme_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/countdown_card.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'add_event_screen.dart';
 import 'event_detail_screen.dart';
+import 'about_screen.dart';
+import 'support_screen.dart';
+import 'suggestions_screen.dart';
+import 'preferences_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,14 +23,10 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen>
-    with SingleTickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> {
   final StorageService _storageService = StorageService();
   String _selectedCategory = 'Tümü';
-  bool _isSearching = false;
-  String _searchQuery = '';
-  final _searchController = TextEditingController();
-  late TabController _tabController;
+  int _selectedTab = 1; // 0=Geçmiş, 1=Yaklaşan
 
   final List<String> _filters = [
     'Tümü',
@@ -40,383 +39,772 @@ class _HomeScreenState extends State<HomeScreen>
   ];
 
   @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final now = DateTime.now();
-    final dateStr = DateFormat('d MMMM yyyy, EEEE', 'tr_TR').format(now);
 
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Stack(
           children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 12, 0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: _isSearching
-                        ? TextField(
-                            controller: _searchController,
-                            autofocus: true,
-                            style: GoogleFonts.poppins(fontSize: 16),
-                            keyboardType: TextInputType.text,
-                            textInputAction: TextInputAction.search,
-                            autocorrect: false,
-                            enableSuggestions: true,
-                            decoration: InputDecoration(
-                              hintText: 'Etkinlik ara...',
-                              hintStyle: GoogleFonts.poppins(
-                                color: Colors.grey[400],
+            Column(
+              children: [
+                _buildHeader(isDark),
+                Expanded(
+                  child: ValueListenableBuilder(
+                    valueListenable: _storageService.box.listenable(),
+                    builder: (context, Box<EventModel> box, _) {
+                      var allEvents = _storageService.getAllEvents();
+
+                      if (_selectedCategory != 'Tümü') {
+                        allEvents = allEvents
+                            .where((e) => e.category == _selectedCategory)
+                            .toList();
+                      }
+
+                      final upcoming = allEvents
+                          .where((e) => !e.isExpired || e.isToday)
+                          .toList();
+                      final past = allEvents
+                          .where((e) => e.isExpired && !e.isToday)
+                          .toList()
+                        ..sort(
+                            (a, b) => b.targetDate.compareTo(a.targetDate));
+
+                      final events = _selectedTab == 1 ? upcoming : past;
+                      final isPast = _selectedTab == 0;
+
+                      if (events.isEmpty) {
+                        return _buildEmptyState(isDark, isPast);
+                      }
+
+                      return ListView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.only(top: 8, bottom: 120),
+                        itemCount: events.length,
+                        itemBuilder: (context, index) {
+                          final event = events[index];
+                          return Dismissible(
+                            key: Key(event.id),
+                            direction: DismissDirection.horizontal,
+                            confirmDismiss: (direction) async {
+                              if (direction ==
+                                  DismissDirection.endToStart) {
+                                // Left swipe → delete with confirm
+                                HapticFeedback.mediumImpact();
+                                return await _showDeleteConfirm(event);
+                              } else {
+                                // Right swipe → edit
+                                HapticFeedback.mediumImpact();
+                                _showEditEventSheet(event);
+                                return false;
+                              }
+                            },
+                            onDismissed: (_) => _deleteEvent(event),
+                            background: Container(
+                              alignment: Alignment.centerLeft,
+                              padding: const EdgeInsets.only(left: 32),
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 7),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF007AFF),
+                                borderRadius: BorderRadius.circular(20),
                               ),
-                              border: InputBorder.none,
-                              contentPadding: EdgeInsets.zero,
+                              child: const Icon(Icons.edit_rounded,
+                                  color: Colors.white, size: 24),
                             ),
-                            onChanged: (val) =>
-                                setState(() => _searchQuery = val),
-                          )
-                        : Row(
-                            children: [
-                              Image.asset(
-                                'assets/icons/arka-plan-no.png',
-                                width: 44,
-                                height: 44,
+                            secondaryBackground: Container(
+                              alignment: Alignment.centerRight,
+                              padding: const EdgeInsets.only(right: 32),
+                              margin: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 7),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFF3B30),
+                                borderRadius: BorderRadius.circular(20),
                               ),
-                              const SizedBox(width: 10),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Gün Sayacı',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.w800,
-                                      color: isDark ? Colors.white : Colors.grey[900],
-                                    ),
-                                  ),
-                                  Text(
-                                    dateStr,
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 13,
-                                      color: isDark
-                                          ? Colors.grey[400]
-                                          : Colors.grey[600],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                  ),
-                  IconButton(
-                    onPressed: () {
-                      setState(() {
-                        _isSearching = !_isSearching;
-                        if (!_isSearching) {
-                          _searchQuery = '';
-                          _searchController.clear();
-                        }
-                      });
+                              child: const Icon(Icons.delete_rounded,
+                                  color: Colors.white, size: 24),
+                            ),
+                            child: CountdownCard(
+                              event: event,
+                              onTap: () => _navigateToDetail(event),
+                              onDelete: () => _deleteEvent(event),
+                              onEdit: () => _showEditEventSheet(event),
+                              isPastView: isPast,
+                            ),
+                          ).animate().fadeIn(
+                                duration: 400.ms,
+                                delay: (index * 60).ms,
+                              );
+                        },
+                      );
                     },
-                    icon: Icon(
-                      _isSearching ? Icons.close_rounded : Icons.search_rounded,
-                      size: 26,
-                    ),
                   ),
-                  IconButton(
-                    onPressed: () => themeProvider.toggleTheme(),
-                    tooltip: themeProvider.themeModeLabel,
-                    icon: Icon(
-                      themeProvider.themeModeIcon,
-                      color: isDark ? Colors.amber : Colors.indigo,
-                      size: 24,
-                    ),
-                  ),
-                ],
-              ),
-            ).animate().fadeIn(duration: 400.ms),
-
-            const SizedBox(height: 12),
-
-            // Tabs: Yaklaşan / Geçmiş
-            TabBar(
-              controller: _tabController,
-              tabs: const [
-                Tab(text: 'Yaklaşan'),
-                Tab(text: 'Geçmiş'),
+                ),
               ],
-              labelStyle: GoogleFonts.poppins(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-              ),
-              unselectedLabelStyle: GoogleFonts.poppins(
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-              ),
             ),
 
-            const SizedBox(height: 8),
-
-            // Category filter chips
-            SizedBox(
-              height: 40,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: _filters.length,
-                itemBuilder: (context, index) {
-                  final filter = _filters[index];
-                  final isSelected = filter == _selectedCategory;
-                  final icon = filter == 'Tümü'
-                      ? Icons.grid_view_rounded
-                      : AppTheme.getFallbackIconForCategory(filter);
-
-                  return Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: GestureDetector(
-                      onTap: () => setState(() => _selectedCategory = filter),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          gradient: isSelected
-                              ? const LinearGradient(
-                                  begin: Alignment(-1, -1),
-                                  end: Alignment(1, 1),
-                                  colors: [
-                                    Color(0xFF8B6914),
-                                    Color(0xFFC8873A),
-                                  ],
-                                )
-                              : null,
-                          color: isSelected
-                              ? null
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(20),
-                          border: isSelected
-                              ? null
-                              : Border.all(
-                                  color: const Color(0xFFD4AF37),
-                                  width: 1.5,
-                                ),
-                          boxShadow: isSelected
-                              ? [
-                                  BoxShadow(
-                                    color: const Color(0xFF8B6914)
-                                        .withValues(alpha: 0.4),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ]
-                              : null,
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              icon,
-                              size: 16,
-                              color: isSelected
-                                  ? Colors.white
-                                  : const Color(0xFF8B6914),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              filter,
-                              style: GoogleFonts.poppins(
-                                fontSize: 13,
-                                fontWeight: isSelected
-                                    ? FontWeight.w600
-                                    : FontWeight.w500,
-                                color: isSelected
-                                    ? Colors.white
-                                    : const Color(0xFF8B6914),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-
-            const SizedBox(height: 8),
-
-            // Events list with tabs
-            Expanded(
-              child: ValueListenableBuilder(
-                valueListenable: _storageService.box.listenable(),
-                builder: (context, Box<EventModel> box, _) {
-                  var allEvents = _storageService.getAllEvents();
-
-                  // Apply category filter
-                  if (_selectedCategory != 'Tümü') {
-                    allEvents = allEvents
-                        .where((e) => e.category == _selectedCategory)
-                        .toList();
-                  }
-
-                  // Apply search filter
-                  if (_searchQuery.isNotEmpty) {
-                    allEvents = allEvents
-                        .where((e) => e.title
-                            .toLowerCase()
-                            .contains(_searchQuery.toLowerCase()))
-                        .toList();
-                  }
-
-                  // Split into upcoming and past
-                  final upcoming = allEvents
-                      .where((e) => !e.isExpired || e.isToday)
-                      .toList();
-                  final past = allEvents
-                      .where((e) => e.isExpired && !e.isToday)
-                      .toList()
-                    ..sort(
-                        (a, b) => b.targetDate.compareTo(a.targetDate));
-
-                  return TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _buildEventList(upcoming, false, isDark),
-                      _buildEventList(past, true, isDark),
-                    ],
-                  );
-                },
-              ),
+            // Floating bottom toggle
+            Positioned(
+              bottom: 32,
+              left: 0,
+              right: 0,
+              child: Center(child: _buildFloatingToggle(isDark)),
             ),
           ],
         ),
       ),
-      floatingActionButton: _buildFAB(),
     );
   }
 
-  Widget _buildEventList(
-      List<EventModel> events, bool isPast, bool isDark) {
-    if (events.isEmpty) {
-      return _buildEmptyState(isDark, isPast);
-    }
+  // === HEADER ===
+  Widget _buildHeader(bool isDark) {
+    final bgColor = isDark ? AppTheme.surfaceDark : Colors.white;
+    final textColor = isDark ? Colors.white : AppTheme.primaryText;
+    final borderColor =
+        isDark ? Colors.white.withValues(alpha: 0.1) : AppTheme.cardBorder;
+    final shadowColor =
+        isDark ? Colors.black.withValues(alpha: 0.3) : AppTheme.buttonShadow;
 
-    return ListView.builder(
-      padding: const EdgeInsets.only(top: 4, bottom: 100),
-      itemCount: events.length,
-      itemBuilder: (context, index) {
-        final event = events[index];
-        return CountdownCard(
-          event: event,
-          onTap: () => _navigateToDetail(event),
-          onDelete: () => _deleteEvent(event),
-          onEdit: () => _showEditEventSheet(event),
-          isPastView: isPast,
-        ).animate().fadeIn(
-              duration: 400.ms,
-              delay: (index * 60).ms,
-            );
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+      child: Row(
+        children: [
+          // Hamburger button — 3 lines
+          _buildCircleButton(
+            isDark: isDark,
+            bgColor: bgColor,
+            borderColor: borderColor,
+            shadowColor: shadowColor,
+            onTap: () {
+              HapticFeedback.lightImpact();
+              _openSettingsPage();
+            },
+            child: SizedBox(
+              width: 18,
+              height: 14,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: List.generate(3, (_) => Container(
+                  height: 1.5,
+                  decoration: BoxDecoration(
+                    color: textColor,
+                    borderRadius: BorderRadius.circular(1),
+                  ),
+                )),
+              ),
+            ),
+          ),
+
+          const Spacer(),
+
+          // Center pill — "#ozelgunleriunutma"
+          GestureDetector(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              _showCategorySheet(isDark);
+            },
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: borderColor, width: 1),
+                boxShadow: [
+                  BoxShadow(
+                    color: shadowColor,
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Text(
+                _selectedCategory == 'Tümü'
+                    ? '#ozelgunleriunutma'
+                    : _selectedCategory,
+                style: GoogleFonts.poppins(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.5,
+                  color: textColor,
+                ),
+              ),
+            ),
+          ),
+
+          const Spacer(),
+
+          // Plus button — thin icon
+          _buildCircleButton(
+            isDark: isDark,
+            bgColor: bgColor,
+            borderColor: borderColor,
+            shadowColor: shadowColor,
+            onTap: () {
+              HapticFeedback.lightImpact();
+              _showAddEventSheet();
+            },
+            child: Icon(
+              Icons.add,
+              size: 22,
+              color: textColor,
+              weight: 100,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCircleButton({
+    required bool isDark,
+    required Color bgColor,
+    required Color borderColor,
+    required Color shadowColor,
+    required VoidCallback onTap,
+    required Widget child,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: bgColor,
+          shape: BoxShape.circle,
+          border: Border.all(color: borderColor, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: shadowColor,
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Center(child: child),
+      ),
+    );
+  }
+
+  // === FLOATING TOGGLE ===
+  Widget _buildFloatingToggle(bool isDark) {
+    final bgColor = isDark ? AppTheme.surfaceDark : Colors.white;
+    final borderColor =
+        isDark ? Colors.white.withValues(alpha: 0.1) : AppTheme.cardBorder;
+    final shadowColor =
+        isDark ? Colors.black.withValues(alpha: 0.3) : AppTheme.buttonShadow;
+    final selectedText = isDark ? Colors.white : Colors.white;
+    final selectedBg =
+        isDark ? Colors.white.withValues(alpha: 0.15) : AppTheme.primaryText;
+    final unselectedText =
+        isDark ? Colors.grey[500]! : AppTheme.secondaryText;
+
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: borderColor, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: shadowColor,
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildToggleOption(
+            label: 'Geçmiş',
+            isSelected: _selectedTab == 0,
+            selectedBg: selectedBg,
+            selectedText: selectedText,
+            unselectedText: unselectedText,
+            onTap: () {
+              HapticFeedback.selectionClick();
+              setState(() => _selectedTab = 0);
+            },
+          ),
+          _buildToggleOption(
+            label: 'Yaklaşan',
+            isSelected: _selectedTab == 1,
+            selectedBg: selectedBg,
+            selectedText: selectedText,
+            unselectedText: unselectedText,
+            onTap: () {
+              HapticFeedback.selectionClick();
+              setState(() => _selectedTab = 1);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildToggleOption({
+    required String label,
+    required bool isSelected,
+    required Color selectedBg,
+    required Color selectedText,
+    required Color unselectedText,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? selectedBg : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -0.5,
+            color: isSelected ? selectedText : unselectedText,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // === CATEGORY BOTTOM SHEET ===
+  void _showCategorySheet(bool isDark) {
+    HapticFeedback.selectionClick();
+    final bgColor = isDark ? AppTheme.surfaceDark : Colors.white;
+    final textColor = isDark ? Colors.white : AppTheme.primaryText;
+    final secondaryColor =
+        isDark ? Colors.grey[400]! : AppTheme.secondaryText;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return Container(
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius:
+                const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Center(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(vertical: 12),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[400],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Kategori Seçin',
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: textColor,
+                    ),
+                  ),
+                ),
+              ),
+              ..._filters.map((filter) {
+                final isSelected = filter == _selectedCategory;
+                return ListTile(
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 24),
+                  leading: Icon(
+                    filter == 'Tümü'
+                        ? Icons.grid_view_rounded
+                        : AppTheme.getFallbackIconForCategory(filter),
+                    color: isSelected ? AppTheme.accent : secondaryColor,
+                    size: 22,
+                  ),
+                  title: Text(
+                    filter == 'Tümü' ? 'Tüm Etkinlikler' : filter,
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight:
+                          isSelected ? FontWeight.w600 : FontWeight.w400,
+                      color: isSelected ? textColor : secondaryColor,
+                    ),
+                  ),
+                  trailing: isSelected
+                      ? Icon(Icons.check_rounded,
+                          color: AppTheme.accent, size: 22)
+                      : null,
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    setState(() => _selectedCategory = filter);
+                    Navigator.pop(context);
+                  },
+                );
+              }),
+              const SizedBox(height: 24),
+            ],
+          ),
+        );
       },
     );
   }
 
-  Widget _buildFAB() {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
-        gradient: const LinearGradient(
-          colors: [Color(0xFF1A1A2E), Color(0xFF8B6914)],
-          begin: Alignment(-1, -1),
-          end: Alignment(1, 1),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF8B6914).withValues(alpha: 0.4),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+  // === FULL-PAGE SETTINGS (Days style) ===
+  void _openSettingsPage() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final pageBg = isDark ? const Color(0xFF000000) : const Color(0xFFF5F5F0);
+    final cardBg = isDark ? AppTheme.surfaceDark : Colors.white;
+    final textColor = isDark ? Colors.white : AppTheme.primaryText;
+    final secondaryColor =
+        isDark ? Colors.grey[400]! : AppTheme.secondaryText;
+
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return Scaffold(
+            backgroundColor: pageBg,
+            body: SafeArea(
+              child: Column(
+                children: [
+                  // Header: X button + "Ayarlar" title
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                    child: Row(
+                      children: [
+                        // Close button (dark circle with X)
+                        GestureDetector(
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            Navigator.pop(context);
+                          },
+                          child: Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? Colors.white.withValues(alpha: 0.1)
+                                  : AppTheme.primaryText,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.close_rounded,
+                              size: 22,
+                              color: isDark ? Colors.white : Colors.white,
+                            ),
+                          ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          'Ayarlar',
+                          style: GoogleFonts.poppins(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: textColor,
+                          ),
+                        ),
+                        const Spacer(),
+                        const SizedBox(width: 44), // balance
+                      ],
+                    ),
+                  ),
+
+                  // Menu items
+                  Expanded(
+                    child: ListView(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      children: [
+                        _buildSettingsCard(
+                          icon: Icons.tune_rounded,
+                          label: 'Tercihler',
+                          cardBg: cardBg,
+                          textColor: textColor,
+                          secondaryColor: secondaryColor,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) =>
+                                      const PreferencesScreen()),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        _buildSettingsCard(
+                          icon: Icons.star_outline_rounded,
+                          label: 'Uygulamayı Değerlendir',
+                          cardBg: cardBg,
+                          textColor: textColor,
+                          secondaryColor: secondaryColor,
+                          onTap: () {
+                            // Placeholder — gerçek store ID eklenecek
+                            launchUrl(Uri.parse(
+                                'https://apps.apple.com/app/id0000000000'));
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        _buildSettingsCard(
+                          icon: Icons.help_outline_rounded,
+                          label: 'Destek',
+                          cardBg: cardBg,
+                          textColor: textColor,
+                          secondaryColor: secondaryColor,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const SupportScreen()),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        _buildSettingsCard(
+                          icon: Icons.chat_bubble_outline_rounded,
+                          label: 'Öneriler',
+                          cardBg: cardBg,
+                          textColor: textColor,
+                          secondaryColor: secondaryColor,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) =>
+                                      const SuggestionsScreen()),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 8),
+                        _buildSettingsCard(
+                          icon: Icons.info_outline_rounded,
+                          label: 'Hakkında',
+                          cardBg: cardBg,
+                          textColor: textColor,
+                          secondaryColor: secondaryColor,
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const AboutScreen()),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 32),
+                        Center(
+                          child: Text(
+                            'v1.0.0',
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: secondaryColor,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          final slide = Tween<Offset>(
+            begin: const Offset(-1, 0),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutCubic,
+          ));
+          return SlideTransition(position: slide, child: child);
+        },
+        transitionDuration: const Duration(milliseconds: 350),
+        reverseTransitionDuration: const Duration(milliseconds: 300),
       ),
-      child: FloatingActionButton.extended(
-        onPressed: _showAddEventSheet,
-        backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
-        elevation: 0,
-        icon: const Icon(Icons.add_rounded, size: 24),
-        label: Text(
-          'Yeni Etkinlik',
-          style: GoogleFonts.poppins(
-            fontWeight: FontWeight.w600,
-            fontSize: 14,
-          ),
-        ),
-      ),
-    )
-        .animate(onPlay: (c) => c.repeat(reverse: true))
-        .scale(
-          begin: const Offset(1.0, 1.0),
-          end: const Offset(1.03, 1.03),
-          duration: 1500.ms,
-          curve: Curves.easeInOut,
-        )
-        .animate()
-        .scale(delay: 300.ms, duration: 300.ms);
+    );
   }
 
-  Widget _buildEmptyState(bool isDark, bool isPast) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            isPast ? Icons.history_rounded : Icons.event_note_rounded,
-            size: 72,
-            color: isDark ? Colors.grey[600] : Colors.grey[400],
+  Widget _buildSettingsCard({
+    required IconData icon,
+    required String label,
+    required Color cardBg,
+    required Color textColor,
+    required Color secondaryColor,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onTap();
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        decoration: BoxDecoration(
+          color: cardBg,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 22, color: secondaryColor),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                label,
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: textColor,
+                ),
+              ),
+            ),
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 22,
+              color: secondaryColor,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // === DELETE CONFIRM ===
+  Future<bool> _showDeleteConfirm(EventModel event) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        final isDark = Theme.of(ctx).brightness == Brightness.dark;
+        return AlertDialog(
+          backgroundColor:
+              isDark ? const Color(0xFF1C1C1E) : Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
           ),
-          const SizedBox(height: 16),
-          Text(
-            isPast
-                ? 'Geçmiş etkinlik bulunmuyor'
-                : 'Henüz etkinlik eklenmemiş',
+          title: Text(
+            'Etkinliği Sil',
             style: GoogleFonts.poppins(
-              fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: isDark ? Colors.grey[400] : Colors.grey[600],
+              color: isDark ? Colors.white : AppTheme.primaryText,
             ),
           ),
-          if (!isPast) ...[
-            const SizedBox(height: 8),
-            Text(
-              'Aşağıdaki butona basarak\nilk etkinliğini ekle!',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                color: Colors.grey[500],
+          content: Text(
+            '"${event.title}" etkinliğini silmek istediğine emin misin?',
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: isDark ? Colors.grey[300] : AppTheme.secondaryText,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(
+                'Vazgeç',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w500,
+                  color: isDark ? Colors.grey[400] : AppTheme.secondaryText,
+                ),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                HapticFeedback.heavyImpact();
+                Navigator.pop(ctx, true);
+              },
+              child: Text(
+                'Sil',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFFFF3B30),
+                ),
               ),
             ),
           ],
-        ],
-      ),
-    ).animate().fadeIn(duration: 500.ms);
+        );
+      },
+    );
+    return result ?? false;
   }
 
+  // === EMPTY STATE ===
+  Widget _buildEmptyState(bool isDark, bool isPast) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 100),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              isPast
+                  ? Icons.hourglass_empty_rounded
+                  : Icons.calendar_today_outlined,
+              size: 64,
+              color: isDark ? Colors.grey[700] : const Color(0xFFD1D1D6),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              isPast ? 'Geçmiş etkinlik yok' : 'Henüz etkinlik yok',
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
+                color: isDark ? Colors.grey[500] : AppTheme.secondaryText,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              isPast
+                  ? 'Tamamlanan etkinlikler burada görünecek'
+                  : 'İlk geri sayımını başlat',
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                color: isDark
+                    ? Colors.grey[600]
+                    : const Color(0xFFAEAEB2),
+              ),
+            ),
+            if (!isPast) ...[
+              const SizedBox(height: 24),
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  _showAddEventSheet();
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 24, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : AppTheme.primaryText,
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Text(
+                    'Ekle',
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    ).animate().fadeIn(duration: 300.ms);
+  }
+
+  // === NAVIGATION ===
   void _navigateToDetail(EventModel event) {
     Navigator.push(
       context,
@@ -425,26 +813,23 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   void _showAddEventSheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => const AddEventSheet(),
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const AddEventSheet()),
     );
   }
 
   void _showEditEventSheet(EventModel event) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => AddEventSheet(event: event),
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => AddEventSheet(event: event)),
     );
   }
 
   void _deleteEvent(EventModel event) {
     _storageService.deleteEvent(event.id);
     NotificationService().cancelEventNotification(event.id);
+    HapticFeedback.mediumImpact();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(

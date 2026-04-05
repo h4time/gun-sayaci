@@ -3,7 +3,13 @@
     "allow": [
       "Bash(taskkill //F //IM \"flutter_tool*\")",
       "Bash(taskkill //F //IM \"dart.exe\")",
-      "Bash(dart run:*)"
+      "Bash(dart run:*)",
+      "Bash(find /c/Users/USER/Desktop/countdown_app -name \"*.json\" -path \"*/assets/lottie/*\" -exec cat {} \\\\;)",
+      "Bash(ls -la /c/Users/USER/Desktop/countdown_app/ios/Podfile*)",
+      "Bash(xargs grep:*)",
+      "Bash(ls /c/Users/USER/Desktop/countdown_app/android/app/src/main/res/drawable*/)",
+      "Bash(find /c/Users/USER/Desktop/countdown_app/ios/Runner -name \"*.entitlements\" -exec cat {} \\\\;)",
+      "Bash(find /c/Users/USER/Desktop/countdown_app/assets -type f -exec du -h {} \\\\;)"
     ]
   }
 }

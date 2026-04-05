@@ -2,18 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Light theme colors
-  static const Color bgLight = Color(0xFFFAFAFA);
+  // === Light Theme Colors ===
+  static const Color bgLight = Color(0xFFFFFFFF);
+  static const Color primaryText = Color(0xFF1A1A1A);
+  static const Color secondaryText = Color(0xFF8E8E93);
+  static const Color accent = Color(0xFFF5A623); // warm amber/gold
+  static const Color cardBorder = Color(0x0F000000); // rgba(0,0,0,0.06)
+  static const Color divider = Color(0xFFE5E5EA);
+  static const Color toggleSelectedBg = Color(0xFFF2F2F7);
+  static const Color buttonShadow = Color(0x14000000); // rgba(0,0,0,0.08)
 
-  // Dark theme colors
-  static const Color bgDark = Color(0xFF1A1A2E);
-  static const Color surfaceDark = Color(0xFF16213E);
-  static const Color cardDark = Color(0xFF0F3460);
-
-  // Accent
-  static const Color accent = Color(0xFF6C63FF);
-  static const Color accentLight = Color(0xFF8B83FF);
-  static const Color accentEnd = Color(0xFF4ECDC4);
+  // === Dark Theme Colors ===
+  static const Color bgDark = Color(0xFF0A0A0F);
+  static const Color surfaceDark = Color(0xFF1C1C1E);
+  static const Color cardDark = Color(0xFF2C2C2E);
+  static const Color darkDivider = Color(0x14FFFFFF); // rgba(255,255,255,0.08)
+  static const Color darkInput = Color(0xFF2C2C2E);
+  static const Color darkSwitchInactive = Color(0xFF3A3A3C);
 
   // Category image mapping
   static const Map<String, String> categoryImages = {
@@ -56,6 +61,33 @@ class AppTheme {
     return categoryFallbackIcons[category] ?? Icons.event_rounded;
   }
 
+  // === Card text styles ===
+  static TextStyle cardTitleStyle() {
+    return GoogleFonts.dmSerifDisplay(
+      fontSize: 28,
+      fontWeight: FontWeight.w400,
+      color: Colors.white,
+      height: 1.15,
+      shadows: [
+        const Shadow(
+          blurRadius: 8,
+          color: Color(0x4D000000),
+          offset: Offset(0, 2),
+        ),
+      ],
+    );
+  }
+
+  static TextStyle cardCountdownStyle() {
+    return GoogleFonts.poppins(
+      fontSize: 13,
+      fontWeight: FontWeight.w500,
+      color: const Color(0xCCFFFFFF), // white 80%
+      letterSpacing: 2.0,
+    );
+  }
+
+  // === Themes ===
   static ThemeData lightTheme() {
     return ThemeData(
       useMaterial3: true,
@@ -70,24 +102,17 @@ class AppTheme {
         centerTitle: false,
         elevation: 0,
         backgroundColor: bgLight,
-        foregroundColor: Colors.grey[900],
+        foregroundColor: primaryText,
         titleTextStyle: GoogleFonts.poppins(
-          fontSize: 24,
-          fontWeight: FontWeight.w700,
-          color: Colors.grey[900],
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+          color: primaryText,
         ),
-      ),
-      tabBarTheme: TabBarThemeData(
-        labelColor: accent,
-        unselectedLabelColor: Colors.grey[500],
-        indicatorColor: accent,
-        labelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-        unselectedLabelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w500),
       ),
       cardTheme: CardThemeData(
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
         ),
       ),
     );
@@ -98,35 +123,29 @@ class AppTheme {
       useMaterial3: true,
       brightness: Brightness.dark,
       colorScheme: ColorScheme.fromSeed(
-        seedColor: accentLight,
+        seedColor: accent,
         brightness: Brightness.dark,
         surface: surfaceDark,
       ),
       textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme),
       scaffoldBackgroundColor: bgDark,
+      dividerColor: darkDivider,
       appBarTheme: AppBarTheme(
         centerTitle: false,
         elevation: 0,
         backgroundColor: bgDark,
         foregroundColor: Colors.white,
         titleTextStyle: GoogleFonts.poppins(
-          fontSize: 24,
-          fontWeight: FontWeight.w700,
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
           color: Colors.white,
         ),
       ),
-      tabBarTheme: TabBarThemeData(
-        labelColor: accentLight,
-        unselectedLabelColor: Colors.grey[500],
-        indicatorColor: accentLight,
-        labelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w600),
-        unselectedLabelStyle: GoogleFonts.poppins(fontWeight: FontWeight.w500),
-      ),
       cardTheme: CardThemeData(
         elevation: 0,
-        color: surfaceDark,
+        color: cardDark,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
         ),
       ),
     );

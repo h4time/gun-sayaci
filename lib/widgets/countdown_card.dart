@@ -1,10 +1,11 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/event_model.dart';
 import '../theme/app_theme.dart';
 
-class CountdownCard extends StatelessWidget {
+class CountdownCard extends StatefulWidget {
   final EventModel event;
   final VoidCallback onTap;
   final VoidCallback onDelete;
@@ -21,185 +22,196 @@ class CountdownCard extends StatelessWidget {
   });
 
   @override
+  State<CountdownCard> createState() => _CountdownCardState();
+}
+
+class _CountdownCardState extends State<CountdownCard>
+    with SingleTickerProviderStateMixin {
+  bool _pressed = false;
+  late AnimationController _progressCtrl;
+  late Animation<double> _progressAnim;
+
+  static const Map<String, Color> _categoryColors = {
+    'Doğum Günü': Color(0xFFFF4B77),
+    'Tatil': Color(0xFF2EC4B6),
+    'Düğün/Yıldönümü': Color(0xFFFF6B9D),
+    'Sınav/İş': Color(0xFFF5A623),
+    'Seyahat': Color(0xFF8B5CF6),
+    'Diğer': Color(0xFF8E8E93),
+  };
+
+  static const Map<String, String> _categoryEmojis = {
+    'Doğum Günü': '🎂',
+    'Tatil': '✈️',
+    'Düğün/Yıldönümü': '💍',
+    'Sınav/İş': '💼',
+    'Seyahat': '🧳',
+    'Diğer': '•••',
+  };
+
+  static const _months = [
+    'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+    'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık',
+  ];
+  static const _dayNames = [
+    'Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma',
+    'Cumartesi', 'Pazar',
+  ];
+
+  double _calc365Progress() {
+    final days = widget.event.daysRemaining;
+    if (widget.event.isToday) return 1.0;
+    if (widget.isPastView || widget.event.isExpired) return 1.0;
+    if (days >= 365) return 0.03; // minimum so ring isn't empty
+    return ((365 - days) / 365).clamp(0.03, 1.0);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _progressCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    final target = _calc365Progress();
+    _progressAnim = Tween<double>(begin: 0, end: target).animate(
+      CurvedAnimation(parent: _progressCtrl, curve: Curves.easeOutCubic),
+    );
+    _progressCtrl.forward();
+  }
+
+  @override
+  void didUpdateWidget(covariant CountdownCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.event.daysRemaining != widget.event.daysRemaining) {
+      final target = _calc365Progress();
+      _progressAnim = Tween<double>(
+        begin: _progressAnim.value,
+        end: target,
+      ).animate(
+        CurvedAnimation(parent: _progressCtrl, curve: Curves.easeOutCubic),
+      );
+      _progressCtrl
+        ..reset()
+        ..forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _progressCtrl.dispose();
+    super.dispose();
+  }
+
+  void _onTapDown(TapDownDetails _) => setState(() => _pressed = true);
+  void _onTapUp(TapUpDetails _) => setState(() => _pressed = false);
+  void _onTapCancel() => setState(() => _pressed = false);
+
+  @override
   Widget build(BuildContext context) {
-    final imagePath = AppTheme.getImageForCategory(event.category);
-    final iconPath = AppTheme.getIconForCategory(event.category);
-    final isToday = event.isToday;
-    final isPast = isPastView || (event.isExpired && !isToday);
-    final screenWidth = MediaQuery.of(context).size.width;
+    final imagePath = AppTheme.getImageForCategory(widget.event.category);
+    final isToday = widget.event.isToday;
+    final isPast = widget.isPastView || (widget.event.isExpired && !isToday);
+    final catColor =
+        _categoryColors[widget.event.category] ?? const Color(0xFF8E8E93);
+    final catEmoji = _categoryEmojis[widget.event.category] ?? '📌';
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      child: Opacity(
-        opacity: isPastView ? 0.7 : 1.0,
-        child: Dismissible(
-          key: Key(event.id),
-          direction: DismissDirection.endToStart,
-          onDismissed: (_) => onDelete(),
-          background: Container(
-            alignment: Alignment.centerRight,
-            padding: const EdgeInsets.only(right: 24),
-            decoration: BoxDecoration(
-              color: Colors.red.shade400,
-              borderRadius: BorderRadius.circular(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+      child: AnimatedScale(
+        scale: _pressed ? 0.97 : 1.0,
+        duration: Duration(milliseconds: _pressed ? 150 : 250),
+        curve: _pressed ? Curves.easeOut : Curves.elasticOut,
+        child: AnimatedContainer(
+          duration: Duration(milliseconds: _pressed ? 150 : 250),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: _pressed
+                  ? catColor.withValues(alpha: 0.2)
+                  : const Color(0x0F000000),
+              width: 1,
             ),
-            child: const Icon(Icons.delete_rounded, color: Colors.white, size: 28),
+            boxShadow: [
+              BoxShadow(
+                color: Color.fromRGBO(0, 0, 0, _pressed ? 0.12 : 0.06),
+                blurRadius: _pressed ? 18 : 12,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: GestureDetector(
-            onTap: onTap,
-            onLongPress: onEdit,
-            child: Container(
-              height: 180,
-              width: screenWidth - 32,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.15),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    // Background image with blur
-                    ImageFiltered(
-                      imageFilter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-                      child: Image.asset(
+            onTapDown: _onTapDown,
+            onTapUp: _onTapUp,
+            onTapCancel: _onTapCancel,
+            onTap: () {
+              HapticFeedback.lightImpact();
+              widget.onTap();
+            },
+            onLongPress: () {
+              HapticFeedback.mediumImpact();
+              widget.onEdit?.call();
+            },
+            child: Opacity(
+              opacity: isPast ? 0.7 : 1.0,
+              child: SizedBox(
+                height: 190,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      // Photo
+                      Image.asset(
                         imagePath,
                         fit: BoxFit.cover,
-                        colorBlendMode: isPast ? BlendMode.saturation : null,
+                        colorBlendMode:
+                            isPast ? BlendMode.saturation : null,
                         color: isPast ? Colors.grey : null,
                       ),
-                    ),
 
-                    // Dark overlay
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.centerLeft,
-                          end: Alignment.centerRight,
-                          colors: [
-                            Colors.black.withValues(alpha: isPast ? 0.7 : 0.6),
-                            Colors.black.withValues(alpha: isPast ? 0.5 : 0.35),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    // Content
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-                      child: Row(
-                        children: [
-                          // Left side - Premium countdown (fixed 100px)
-                          SizedBox(
-                            width: 100,
-                            child: _buildCountdownWidget(event, isToday, isPast),
-                          ),
-
-                          const SizedBox(width: 8),
-
-                          // Middle - Event info (flexible, right padding for icon)
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(right: 50),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    event.title,
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.white,
-                                      height: 1.2,
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    textAlign: TextAlign.right,
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    _formatDate(event.targetDate),
-                                    style: GoogleFonts.poppins(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w400,
-                                      color: Colors.white.withValues(alpha: 0.85),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      gradient: const LinearGradient(
-                                        colors: [Color(0xFF2D1B69), Color(0xFF1A1A2E)],
-                                      ),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Text(
-                                      event.category,
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w500,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                      // Gradient
+                      Positioned(
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        height: 190 * 0.55,
+                        child: Container(
+                          decoration: const BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [
+                                Color(0x00000000),
+                                Color(0x8C000000),
+                              ],
                             ),
                           ),
-                        ],
+                        ),
                       ),
-                    ),
 
-                    // Category icon in top-right corner (fixed 40px area)
-                    Positioned(
-                      top: 12,
-                      right: 12,
-                      child: SizedBox(
-                        width: 40,
-                        height: 40,
-                        child: _buildCategoryIcon(iconPath, event.category),
-                      ),
-                    ),
-
-                    // D-Day celebration badge
-                    if (isToday)
+                      // Category badge (translucent)
                       Positioned(
                         top: 12,
                         left: 12,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
+                              horizontal: 10, vertical: 5),
                           decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
-                            ),
-                            borderRadius: BorderRadius.circular(12),
+                            color: catColor.withValues(alpha: 0.7),
+                            borderRadius: BorderRadius.circular(20),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.celebration_rounded,
-                                  color: Colors.white, size: 14),
-                              const SizedBox(width: 4),
+                              Text(catEmoji,
+                                  style: const TextStyle(fontSize: 10)),
+                              const SizedBox(width: 3),
                               Text(
-                                'Kutlu Olsun!',
+                                widget.event.category,
                                 style: GoogleFonts.poppins(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
                                   color: Colors.white,
                                 ),
                               ),
@@ -208,41 +220,84 @@ class CountdownCard extends StatelessWidget {
                         ),
                       ),
 
-                    // Progress bar at bottom
-                    if (!isPastView)
+                      // Countdown circle
                       Positioned(
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        child: Container(
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.15),
-                            borderRadius: const BorderRadius.only(
-                              bottomLeft: Radius.circular(16),
-                              bottomRight: Radius.circular(16),
-                            ),
-                          ),
-                          child: FractionallySizedBox(
-                            alignment: Alignment.centerLeft,
-                            widthFactor: event.progress,
+                        top: 12,
+                        right: 12,
+                        child: _buildCountdownCircle(
+                            widget.event, isToday, isPast, catColor),
+                      ),
+
+                      // "BUGÜN" badge
+                      if (isToday)
+                        Positioned(
+                          top: 12,
+                          left: 0,
+                          right: 0,
+                          child: Center(
                             child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 4),
                               decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: isToday
-                                      ? [const Color(0xFFFFD700), const Color(0xFFFFA500)]
-                                      : [const Color(0xFF6C63FF), const Color(0xFF4ECDC4)],
-                                ),
-                                borderRadius: const BorderRadius.only(
-                                  bottomLeft: Radius.circular(16),
-                                  bottomRight: Radius.circular(16),
+                                color: AppTheme.accent,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                'BUGÜN',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                  letterSpacing: 1,
                                 ),
                               ),
                             ),
                           ),
                         ),
+
+                      // Title + Date
+                      Positioned(
+                        bottom: 16,
+                        left: 16,
+                        right: 16,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              widget.event.title,
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.poppins(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                                height: 1.15,
+                                shadows: const [
+                                  Shadow(
+                                    blurRadius: 8,
+                                    color: Color(0x80000000),
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              _formatDate(widget.event.targetDate),
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w400,
+                                color: const Color(0xA6FFFFFF), // 65%
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -252,131 +307,119 @@ class CountdownCard extends StatelessWidget {
     );
   }
 
-  Widget _buildCountdownWidget(EventModel event, bool isToday, bool isPast) {
+  Widget _buildCountdownCircle(
+      EventModel event, bool isToday, bool isPast, Color catColor) {
     final days = event.daysRemaining;
-    const shadowList = [
-      Shadow(color: Colors.black54, blurRadius: 8, offset: Offset(0, 2)),
-    ];
+    final absDays = days.abs();
 
-    // D-Day: "Bugün!" + kutlama emojisi
+    String countText;
+    String labelText;
+
     if (isToday) {
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Bugün!',
-            style: GoogleFonts.poppins(
-              fontSize: 42,
-              fontWeight: FontWeight.w800,
-              color: const Color(0xFFFFD700),
-              height: 1.0,
-              shadows: shadowList,
-            ),
-          ),
-          const SizedBox(height: 4),
-          const Text('🎉🥳', style: TextStyle(fontSize: 24)),
-        ],
-      );
+      countText = '!';
+      labelText = 'BUGÜN';
+    } else if (isPast) {
+      countText = '$absDays';
+      labelText = 'ÖNCE';
+    } else if (absDays == 0) {
+      countText = '${event.remaining.inHours}';
+      labelText = 'SAAT';
+    } else {
+      countText = '$absDays';
+      labelText = 'GÜN';
     }
 
-    // 1 günden az kaldıysa saat:dakika göster
-    if (days == 0 && !event.isExpired) {
-      final remaining = event.remaining;
-      final hours = remaining.inHours;
-      final minutes = remaining.inMinutes % 60;
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}',
-            style: GoogleFonts.poppins(
-              fontSize: 48,
-              fontWeight: FontWeight.w800,
-              color: Colors.white,
-              height: 1.0,
-              shadows: shadowList,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            'saat',
-            style: GoogleFonts.poppins(
-              fontSize: 14,
-              fontWeight: FontWeight.w300,
-              color: Colors.white.withValues(alpha: 0.85),
-            ),
-          ),
-        ],
-      );
-    }
+    final ringColor = isToday
+        ? const Color(0xFFFFD700)
+        : isPast
+            ? const Color(0x99FFFFFF)
+            : catColor;
 
-    // Geçmiş veya gelecek: sayı + "gün" / "gün önce"
-    final absDay = days.abs();
-    final label = isPastView ? 'gün önce' : 'gün';
-
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          '$absDay',
-          style: GoogleFonts.poppins(
-            fontSize: 56,
-            fontWeight: FontWeight.w800,
-            color: Colors.white,
-            height: 1.0,
-            shadows: shadowList,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          label,
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            fontWeight: FontWeight.w300,
-            color: Colors.white.withValues(alpha: 0.85),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCategoryIcon(String? iconPath, String category) {
-    return Container(
-      width: 36,
-      height: 36,
-      padding: const EdgeInsets.all(6),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.25),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: iconPath != null
-          ? Image.asset(
-              iconPath,
-              width: 24,
-              height: 24,
-              color: Colors.white,
-              errorBuilder: (_, _, _) => Icon(
-                AppTheme.getFallbackIconForCategory(category),
-                color: Colors.white,
-                size: 20,
+    return AnimatedBuilder(
+      animation: _progressAnim,
+      builder: (context, child) {
+        return SizedBox(
+          width: 56,
+          height: 56,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // Glow (stronger on today)
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: ringColor.withValues(
+                          alpha: isToday ? 0.6 : 0.35),
+                      blurRadius: isToday ? 12 : 8,
+                    ),
+                  ],
+                ),
               ),
-            )
-          : Icon(
-              AppTheme.getFallbackIconForCategory(category),
-              color: Colors.white,
-              size: 20,
-            ),
+              // Progress ring
+              SizedBox(
+                width: 56,
+                height: 56,
+                child: CircularProgressIndicator(
+                  value: _progressAnim.value,
+                  strokeWidth: 3,
+                  backgroundColor: const Color(0x33FFFFFF),
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(ringColor),
+                ),
+              ),
+              // Inner circle
+              ClipOval(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                  child: Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: const Color(0x33FFFFFF),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0x4DFFFFFF),
+                        width: 1,
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          countText,
+                          style: GoogleFonts.poppins(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            height: 1.1,
+                          ),
+                        ),
+                        Text(
+                          labelText,
+                          style: GoogleFonts.poppins(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xB3FFFFFF),
+                            height: 1.0,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
   String _formatDate(DateTime date) {
-    const months = [
-      'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
-      'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık',
-    ];
-    return '${date.day} ${months[date.month - 1]} ${date.year}';
+    return '${date.day} ${_months[date.month - 1]} ${date.year} ${_dayNames[date.weekday - 1]}';
   }
 }

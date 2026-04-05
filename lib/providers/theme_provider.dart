@@ -2,43 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ThemeProvider extends ChangeNotifier {
-  static const String _key = 'themeMode'; // 0=system, 1=light, 2=dark
-  int _themeModeIndex = 0; // default: system
+  static const String _key = 'isDarkMode';
+  bool _isDark = false;
 
-  bool get isDarkMode => _themeModeIndex == 2;
+  bool get isDarkMode => _isDark;
 
-  ThemeMode get themeMode {
-    switch (_themeModeIndex) {
-      case 1:
-        return ThemeMode.light;
-      case 2:
-        return ThemeMode.dark;
-      default:
-        return ThemeMode.system;
-    }
-  }
-
-  String get themeModeLabel {
-    switch (_themeModeIndex) {
-      case 1:
-        return 'Açık';
-      case 2:
-        return 'Koyu';
-      default:
-        return 'Otomatik';
-    }
-  }
-
-  IconData get themeModeIcon {
-    switch (_themeModeIndex) {
-      case 1:
-        return Icons.light_mode_rounded;
-      case 2:
-        return Icons.dark_mode_rounded;
-      default:
-        return Icons.brightness_auto_rounded;
-    }
-  }
+  ThemeMode get themeMode => _isDark ? ThemeMode.dark : ThemeMode.light;
 
   ThemeProvider() {
     _loadTheme();
@@ -46,14 +15,14 @@ class ThemeProvider extends ChangeNotifier {
 
   Future<void> _loadTheme() async {
     final prefs = await SharedPreferences.getInstance();
-    _themeModeIndex = prefs.getInt(_key) ?? 0;
+    _isDark = prefs.getBool(_key) ?? false;
     notifyListeners();
   }
 
   Future<void> toggleTheme() async {
-    _themeModeIndex = (_themeModeIndex + 1) % 3; // cycle: system -> light -> dark
+    _isDark = !_isDark;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_key, _themeModeIndex);
+    await prefs.setBool(_key, _isDark);
     notifyListeners();
   }
 }
