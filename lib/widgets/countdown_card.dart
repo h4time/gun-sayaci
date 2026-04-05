@@ -397,7 +397,8 @@ class _CountdownCardState extends State<CountdownCard> {
         color: Color(0x55000000),
         shape: BoxShape.circle,
       ),
-      child: Center(
+      child: FittedBox(
+        fit: BoxFit.contain,
         child: CircularPercentIndicator(
           radius: radius,
           lineWidth: lineWidth,
@@ -405,37 +406,35 @@ class _CountdownCardState extends State<CountdownCard> {
           animation: true,
           animationDuration: 800,
           circularStrokeCap: CircularStrokeCap.round,
+          fillColor: Colors.transparent,
           progressColor: isToday
               ? const Color(0xFFFFD700)
               : isPast
                   ? const Color(0x99FFFFFF)
                   : progressColor,
           backgroundColor: const Color(0x26FFFFFF),
-          center: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  countText,
-                  style: GoogleFonts.poppins(
-                    fontSize: countFontSize,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                    height: 1.1,
-                  ),
+          center: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                countText,
+                style: GoogleFonts.poppins(
+                  fontSize: countFontSize,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                  height: 1.1,
                 ),
-                Text(
-                  labelText,
-                  style: GoogleFonts.poppins(
-                    fontSize: labelFontSize,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xB3FFFFFF),
-                    height: 1.0,
-                  ),
+              ),
+              Text(
+                labelText,
+                style: GoogleFonts.poppins(
+                  fontSize: labelFontSize,
+                  fontWeight: FontWeight.w500,
+                  color: const Color(0xB3FFFFFF),
+                  height: 1.0,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
