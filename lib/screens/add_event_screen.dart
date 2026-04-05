@@ -15,7 +15,9 @@ const Map<String, Color> kCategoryColors = {
   'Düğün/Yıldönümü': Color(0xFFFF6B9D),
   'Sınav/İş': Color(0xFFF5A623),
   'Seyahat': Color(0xFF8B5CF6),
-  'Diğer': Color(0xFF8E8E93),
+  'Konser/Etkinlik': Color(0xFF6C5CE7),
+  'Spor/Hedef': Color(0xFF4CAF50),
+  '+ Özel': Color(0xFF8E8E93),
 };
 
 const Map<String, String> kCategoryEmojis = {
@@ -24,7 +26,9 @@ const Map<String, String> kCategoryEmojis = {
   'Düğün/Yıldönümü': '💍',
   'Sınav/İş': '💼',
   'Seyahat': '🧳',
-  'Diğer': '•••',
+  'Konser/Etkinlik': '🎵',
+  'Spor/Hedef': '🏆',
+  '+ Özel': '✏️',
 };
 
 // Pastel backgrounds & text colors for wizard category cards
@@ -34,7 +38,9 @@ const Map<String, Color> kCatBgLight = {
   'Düğün/Yıldönümü': Color(0xFFFBEAF0),
   'Sınav/İş': Color(0xFFFAEEDA),
   'Seyahat': Color(0xFFE1F5EE),
-  'Diğer': Color(0xFFF1EFE8),
+  'Konser/Etkinlik': Color(0xFFEEEDFE),
+  'Spor/Hedef': Color(0xFFEAF3DE),
+  '+ Özel': Color(0xFFF1EFE8),
 };
 const Map<String, Color> kCatTextLight = {
   'Doğum Günü': Color(0xFF791F1F),
@@ -42,7 +48,9 @@ const Map<String, Color> kCatTextLight = {
   'Düğün/Yıldönümü': Color(0xFF72243E),
   'Sınav/İş': Color(0xFF633806),
   'Seyahat': Color(0xFF085041),
-  'Diğer': Color(0xFF444441),
+  'Konser/Etkinlik': Color(0xFF3C3489),
+  'Spor/Hedef': Color(0xFF27500A),
+  '+ Özel': Color(0xFF444441),
 };
 const Map<String, Color> kCatBgDark = {
   'Doğum Günü': Color(0xFF501313),
@@ -50,7 +58,9 @@ const Map<String, Color> kCatBgDark = {
   'Düğün/Yıldönümü': Color(0xFF4B1528),
   'Sınav/İş': Color(0xFF412402),
   'Seyahat': Color(0xFF04342C),
-  'Diğer': Color(0xFF2C2C2A),
+  'Konser/Etkinlik': Color(0xFF26215C),
+  'Spor/Hedef': Color(0xFF173404),
+  '+ Özel': Color(0xFF2C2C2A),
 };
 const Map<String, Color> kCatTextDark = {
   'Doğum Günü': Color(0xFFF7C1C1),
@@ -58,7 +68,9 @@ const Map<String, Color> kCatTextDark = {
   'Düğün/Yıldönümü': Color(0xFFF4C0D1),
   'Sınav/İş': Color(0xFFFAC775),
   'Seyahat': Color(0xFF9FE1CB),
-  'Diğer': Color(0xFFD3D1C7),
+  'Konser/Etkinlik': Color(0xFFCECBF6),
+  'Spor/Hedef': Color(0xFFC0DD97),
+  '+ Özel': Color(0xFFD3D1C7),
 };
 
 /// Entry point
@@ -86,6 +98,7 @@ class _WizardStep1State extends State<_WizardStep1> {
   final _controller = TextEditingController();
   static const int _maxLen = 25;
   String? _selectedCat;
+  String? _customCatName;
 
   @override
   void dispose() {
@@ -93,8 +106,167 @@ class _WizardStep1State extends State<_WizardStep1> {
     super.dispose();
   }
 
+  bool get _isCustomSelected =>
+      _selectedCat != null &&
+      !EventModel.categories.contains(_selectedCat) &&
+      _selectedCat != EventModel.customCategoryKey;
+
   bool get _canContinue =>
-      _controller.text.trim().isNotEmpty && _selectedCat != null;
+      _controller.text.trim().isNotEmpty &&
+      _selectedCat != null &&
+      _selectedCat != EventModel.customCategoryKey;
+
+  /// The list shown in the grid: 7 predefined + '+ Özel'
+  List<String> get _gridCategories =>
+      [...EventModel.categories, EventModel.customCategoryKey];
+
+  void _showCustomCategoryDialog(bool isDark) {
+    final dialogController = TextEditingController(text: _customCatName);
+    final bgColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final textColor = isDark ? Colors.white : AppTheme.primaryText;
+    final hintColor = isDark ? Colors.grey[500]! : const Color(0xFFAEAEB2);
+    final fieldBg =
+        isDark ? const Color(0xFF2C2C2A) : const Color(0xFFF2F2F7);
+
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Dismiss',
+      barrierColor: Colors.black54,
+      transitionDuration: const Duration(milliseconds: 250),
+      transitionBuilder: (context, anim, secondAnim, child) {
+        return FadeTransition(
+          opacity: anim,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.85, end: 1.0).animate(
+              CurvedAnimation(parent: anim, curve: Curves.easeOutCubic),
+            ),
+            child: child,
+          ),
+        );
+      },
+      pageBuilder: (context, anim, secondAnim) {
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: StatefulBuilder(
+              builder: (context, setDialogState) {
+                final text = dialogController.text.trim();
+                final canConfirm = text.isNotEmpty;
+                return Container(
+                  width: MediaQuery.of(context).size.width - 64,
+                  padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
+                  decoration: BoxDecoration(
+                    color: bgColor,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.15),
+                        blurRadius: 30,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '✏️',
+                        style: const TextStyle(fontSize: 36),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Özel Kategori',
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: textColor,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: dialogController,
+                        maxLength: 20,
+                        autofocus: true,
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          color: textColor,
+                        ),
+                        textCapitalization: TextCapitalization.sentences,
+                        onChanged: (_) => setDialogState(() {}),
+                        decoration: InputDecoration(
+                          hintText: 'Kategori adı girin',
+                          hintStyle: GoogleFonts.poppins(
+                            fontSize: 16,
+                            color: hintColor,
+                          ),
+                          counterText:
+                              '${dialogController.text.length}/20',
+                          counterStyle: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: hintColor,
+                          ),
+                          filled: true,
+                          fillColor: fieldBg,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 14),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                                color: AppTheme.accent, width: 2),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      GestureDetector(
+                        onTap: canConfirm
+                            ? () {
+                                HapticFeedback.lightImpact();
+                                final name = dialogController.text.trim();
+                                setState(() {
+                                  _customCatName = name;
+                                  _selectedCat = name;
+                                });
+                                Navigator.pop(context);
+                              }
+                            : null,
+                        child: AnimatedOpacity(
+                          opacity: canConfirm ? 1.0 : 0.4,
+                          duration: const Duration(milliseconds: 200),
+                          child: Container(
+                            width: double.infinity,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryText,
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Center(
+                              child: Text(
+                                'Tamam',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -224,8 +396,12 @@ class _WizardStep1State extends State<_WizardStep1> {
                       mainAxisSpacing: 10,
                       crossAxisSpacing: 10,
                       childAspectRatio: 2.0,
-                      children: EventModel.categories.map((cat) {
-                        final isSelected = cat == _selectedCat;
+                      children: _gridCategories.map((cat) {
+                        final isCustomKey =
+                            cat == EventModel.customCategoryKey;
+                        final isSelected = isCustomKey
+                            ? _isCustomSelected
+                            : cat == _selectedCat;
                         final emoji = kCategoryEmojis[cat] ?? '📌';
                         final bg = isDark
                             ? (kCatBgDark[cat] ??
@@ -238,10 +414,21 @@ class _WizardStep1State extends State<_WizardStep1> {
                             : (kCatTextLight[cat] ??
                                 const Color(0xFF444441));
 
+                        final displayName = isCustomKey && _isCustomSelected
+                            ? _customCatName!
+                            : cat;
+
                         return GestureDetector(
                           onTap: () {
                             HapticFeedback.selectionClick();
-                            setState(() => _selectedCat = cat);
+                            if (isCustomKey) {
+                              _showCustomCategoryDialog(isDark);
+                            } else {
+                              setState(() {
+                                _selectedCat = cat;
+                                _customCatName = null;
+                              });
+                            }
                           },
                           child: AnimatedScale(
                             scale: isSelected ? 0.97 : 1.0,
@@ -275,7 +462,7 @@ class _WizardStep1State extends State<_WizardStep1> {
                                                     fontSize: 32)),
                                         const SizedBox(height: 4),
                                         Text(
-                                          cat,
+                                          displayName,
                                           style:
                                               GoogleFonts.poppins(
                                             fontSize: 13,
@@ -283,6 +470,8 @@ class _WizardStep1State extends State<_WizardStep1> {
                                                 FontWeight.w500,
                                             color: catTextColor,
                                           ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ],
                                     ),
@@ -878,8 +1067,14 @@ class _EditEventPageState extends State<_EditEventPage> {
   late final TextEditingController _titleCtrl;
   late DateTime _date;
   late String _category;
+  String? _customCatName;
   late bool _r1d, _r3d, _r1w, _r1m;
   final _storage = StorageService();
+
+  bool get _isCustomCategory => EventModel.isCustomCategory(_category);
+
+  List<String> get _editCategories =>
+      [...EventModel.categories, EventModel.customCategoryKey];
 
   @override
   void initState() {
@@ -887,6 +1082,9 @@ class _EditEventPageState extends State<_EditEventPage> {
     _titleCtrl = TextEditingController(text: widget.event.title);
     _date = widget.event.targetDate;
     _category = widget.event.category;
+    if (EventModel.isCustomCategory(_category)) {
+      _customCatName = _category;
+    }
     _r1d = widget.event.reminder1Day;
     _r3d = widget.event.reminder3Days;
     _r1w = widget.event.reminder1Week;
@@ -1023,18 +1221,33 @@ class _EditEventPageState extends State<_EditEventPage> {
                       height: 44,
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
-                        itemCount: EventModel.categories.length,
+                        itemCount: _editCategories.length,
                         separatorBuilder: (_, _) =>
                             const SizedBox(width: 8),
                         itemBuilder: (context, i) {
-                          final cat = EventModel.categories[i];
-                          final sel = cat == _category;
+                          final cat = _editCategories[i];
+                          final isCustomKey =
+                              cat == EventModel.customCategoryKey;
+                          final sel = isCustomKey
+                              ? _isCustomCategory
+                              : cat == _category;
                           final emoji =
                               kCategoryEmojis[cat] ?? '📌';
+                          final displayName =
+                              isCustomKey && _isCustomCategory
+                                  ? _customCatName!
+                                  : cat;
                           return GestureDetector(
                             onTap: () {
                               HapticFeedback.selectionClick();
-                              setState(() => _category = cat);
+                              if (isCustomKey) {
+                                _showEditCustomCategoryDialog(isDark);
+                              } else {
+                                setState(() {
+                                  _category = cat;
+                                  _customCatName = null;
+                                });
+                              }
                             },
                             child: AnimatedContainer(
                               duration:
@@ -1063,7 +1276,7 @@ class _EditEventPageState extends State<_EditEventPage> {
                                           fontSize: 14)),
                                   const SizedBox(width: 6),
                                   Text(
-                                    cat,
+                                    displayName,
                                     style: GoogleFonts.poppins(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,
@@ -1169,6 +1382,153 @@ class _EditEventPageState extends State<_EditEventPage> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showEditCustomCategoryDialog(bool isDark) {
+    final dialogController = TextEditingController(text: _customCatName);
+    final bgColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final dlgTextColor = isDark ? Colors.white : AppTheme.primaryText;
+    final hintColor = isDark ? Colors.grey[500]! : const Color(0xFFAEAEB2);
+    final dlgFieldBg =
+        isDark ? const Color(0xFF2C2C2A) : const Color(0xFFF2F2F7);
+
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Dismiss',
+      barrierColor: Colors.black54,
+      transitionDuration: const Duration(milliseconds: 250),
+      transitionBuilder: (context, anim, secondAnim, child) {
+        return FadeTransition(
+          opacity: anim,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.85, end: 1.0).animate(
+              CurvedAnimation(parent: anim, curve: Curves.easeOutCubic),
+            ),
+            child: child,
+          ),
+        );
+      },
+      pageBuilder: (context, anim, secondAnim) {
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: StatefulBuilder(
+              builder: (context, setDialogState) {
+                final text = dialogController.text.trim();
+                final canConfirm = text.isNotEmpty;
+                return Container(
+                  width: MediaQuery.of(context).size.width - 64,
+                  padding: const EdgeInsets.fromLTRB(24, 28, 24, 20),
+                  decoration: BoxDecoration(
+                    color: bgColor,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.15),
+                        blurRadius: 30,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('✏️',
+                          style: TextStyle(fontSize: 36)),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Özel Kategori',
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: dlgTextColor,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: dialogController,
+                        maxLength: 20,
+                        autofocus: true,
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          color: dlgTextColor,
+                        ),
+                        textCapitalization: TextCapitalization.sentences,
+                        onChanged: (_) => setDialogState(() {}),
+                        decoration: InputDecoration(
+                          hintText: 'Kategori adı girin',
+                          hintStyle: GoogleFonts.poppins(
+                            fontSize: 16,
+                            color: hintColor,
+                          ),
+                          counterText:
+                              '${dialogController.text.length}/20',
+                          counterStyle: GoogleFonts.poppins(
+                            fontSize: 12,
+                            color: hintColor,
+                          ),
+                          filled: true,
+                          fillColor: dlgFieldBg,
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 14),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide.none,
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: const BorderSide(
+                                color: AppTheme.accent, width: 2),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      GestureDetector(
+                        onTap: canConfirm
+                            ? () {
+                                HapticFeedback.lightImpact();
+                                final name =
+                                    dialogController.text.trim();
+                                setState(() {
+                                  _customCatName = name;
+                                  _category = name;
+                                });
+                                Navigator.pop(context);
+                              }
+                            : null,
+                        child: AnimatedOpacity(
+                          opacity: canConfirm ? 1.0 : 0.4,
+                          duration: const Duration(milliseconds: 200),
+                          child: Container(
+                            width: double.infinity,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: AppTheme.primaryText,
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Center(
+                              child: Text(
+                                'Tamam',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 

@@ -27,7 +27,8 @@ class AppTheme {
     'Düğün/Yıldönümü': 'assets/images/celebration.jpg',
     'Sınav/İş': 'assets/images/exam.jpg',
     'Seyahat': 'assets/images/seyahat.jpg',
-    'Diğer': 'assets/images/other.jpg',
+    'Konser/Etkinlik': 'assets/images/celebration.jpg',
+    'Spor/Hedef': 'assets/images/other.jpg',
   };
 
   // Category icon mapping
@@ -46,7 +47,8 @@ class AppTheme {
     'Düğün/Yıldönümü': Icons.favorite_rounded,
     'Sınav/İş': Icons.work_rounded,
     'Seyahat': Icons.flight_rounded,
-    'Diğer': Icons.more_horiz_rounded,
+    'Konser/Etkinlik': Icons.music_note_rounded,
+    'Spor/Hedef': Icons.emoji_events_rounded,
   };
 
   static String getImageForCategory(String category) {

@@ -100,6 +100,14 @@ class EventModel extends HiveObject {
     'Düğün/Yıldönümü',
     'Sınav/İş',
     'Seyahat',
-    'Diğer',
+    'Konser/Etkinlik',
+    'Spor/Hedef',
   ];
+
+  /// Marker used in UI for the custom category card
+  static const String customCategoryKey = '+ Özel';
+
+  /// Returns true if the category is a user-defined custom one
+  static bool isCustomCategory(String category) =>
+      !categories.contains(category);
 }

@@ -35,7 +35,8 @@ class _CountdownCardState extends State<CountdownCard> {
     'Düğün/Yıldönümü': Color(0xFFFF6B9D),
     'Sınav/İş': Color(0xFFF5A623),
     'Seyahat': Color(0xFF8B5CF6),
-    'Diğer': Color(0xFF8E8E93),
+    'Konser/Etkinlik': Color(0xFF6C5CE7),
+    'Spor/Hedef': Color(0xFF4CAF50),
   };
 
   static const Map<String, String> _categoryEmojis = {
@@ -44,8 +45,13 @@ class _CountdownCardState extends State<CountdownCard> {
     'Düğün/Yıldönümü': '💍',
     'Sınav/İş': '💼',
     'Seyahat': '🧳',
-    'Diğer': '•••',
+    'Konser/Etkinlik': '🎵',
+    'Spor/Hedef': '🏆',
   };
+
+  // Fallback for custom categories
+  static const Color _customCategoryColor = Color(0xFF8E8E93);
+  static const String _customCategoryEmoji = '✏️';
 
   static const _months = [
     'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
@@ -74,8 +80,9 @@ class _CountdownCardState extends State<CountdownCard> {
     final isToday = widget.event.isToday;
     final isPast = widget.isPastView || (widget.event.isExpired && !isToday);
     final catColor =
-        _categoryColors[widget.event.category] ?? const Color(0xFF8E8E93);
-    final catEmoji = _categoryEmojis[widget.event.category] ?? '📌';
+        _categoryColors[widget.event.category] ?? _customCategoryColor;
+    final catEmoji =
+        _categoryEmojis[widget.event.category] ?? _customCategoryEmoji;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),

@@ -48,7 +48,8 @@ class _HomeScreenState extends State<HomeScreen> {
     'Düğün/Yıldönümü',
     'Sınav/İş',
     'Seyahat',
-    'Diğer',
+    'Konser/Etkinlik',
+    'Spor/Hedef',
   ];
 
   @override

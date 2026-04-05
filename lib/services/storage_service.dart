@@ -13,6 +13,17 @@ class StorageService {
     await Hive.initFlutter();
     Hive.registerAdapter(EventModelAdapter());
     _box = await Hive.openBox<EventModel>(_boxName);
+    await _migrateOtherToCustom();
+  }
+
+  /// One-time migration: rename 'Diğer' category to 'Özel'
+  Future<void> _migrateOtherToCustom() async {
+    for (final event in _box.values) {
+      if (event.category == 'Diğer') {
+        event.category = 'Özel';
+        await event.save();
+      }
+    }
   }
 
   Box<EventModel> get box => _box;
