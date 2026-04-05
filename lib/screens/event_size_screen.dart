@@ -16,8 +16,8 @@ class _EventSizeScreenState extends State<EventSizeScreen> {
 
   static const _sizes = ['large', 'medium', 'small'];
   static const _labels = {'large': 'Büyük', 'medium': 'Orta', 'small': 'Küçük'};
-  static const _heights = {'large': 220.0, 'medium': 150.0, 'small': 105.0};
-  static const _titleFonts = {'large': 20.0, 'medium': 17.0, 'small': 14.0};
+  static const _heights = {'large': 220.0, 'medium': 165.0, 'small': 125.0};
+  static const _titleFonts = {'large': 20.0, 'medium': 16.0, 'small': 13.0};
   static const _dateFonts = {'large': 11.0, 'medium': 9.5, 'small': 8.0};
 
   @override

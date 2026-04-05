@@ -63,26 +63,30 @@ class _CountdownCardState extends State<CountdownCard> {
     'Cumartesi', 'Pazar',
   ];
 
-  // Scale factor based on card size
-  double get _scale {
+  // ── Size-dependent dimensions ──
+  // Heights chosen so all content (badge, circle, title, date) fits
+  // without overflow at any font/padding combination.
+  //   Large  = 220  (original, untouched)
+  //   Medium = 165  (≈75 %)
+  //   Small  = 125  (≈57 %)
+
+  double get _cardHeight {
     switch (widget.cardSize) {
       case 'small':
-        return 0.45;
+        return 125.0;
       case 'medium':
-        return 0.65;
+        return 165.0;
       default:
-        return 1.0;
+        return 220.0;
     }
   }
 
-  // Dimensions
-  double get _cardHeight => 220 * _scale;
   double get _titleFont {
     switch (widget.cardSize) {
       case 'small':
-        return 14.0;
+        return 13.0;
       case 'medium':
-        return 17.0;
+        return 16.0;
       default:
         return 20.0;
     }
@@ -102,9 +106,9 @@ class _CountdownCardState extends State<CountdownCard> {
   double get _circleSize {
     switch (widget.cardSize) {
       case 'small':
-        return 32.0;
+        return 34.0;
       case 'medium':
-        return 40.0;
+        return 42.0;
       default:
         return 50.0;
     }
@@ -113,9 +117,9 @@ class _CountdownCardState extends State<CountdownCard> {
   double get _circleRadius {
     switch (widget.cardSize) {
       case 'small':
-        return 14.0;
+        return 15.0;
       case 'medium':
-        return 18.0;
+        return 19.0;
       default:
         return 23.0;
     }
@@ -124,7 +128,7 @@ class _CountdownCardState extends State<CountdownCard> {
   double get _countFont {
     switch (widget.cardSize) {
       case 'small':
-        return 11.0;
+        return 12.0;
       case 'medium':
         return 14.0;
       default:
@@ -135,7 +139,7 @@ class _CountdownCardState extends State<CountdownCard> {
   double get _countLabelFont {
     switch (widget.cardSize) {
       case 'small':
-        return 5.0;
+        return 5.5;
       case 'medium':
         return 6.5;
       default:
@@ -146,9 +150,9 @@ class _CountdownCardState extends State<CountdownCard> {
   double get _badgeEmojiFont {
     switch (widget.cardSize) {
       case 'small':
-        return 6.0;
+        return 7.0;
       case 'medium':
-        return 7.5;
+        return 8.0;
       default:
         return 9.0;
     }
