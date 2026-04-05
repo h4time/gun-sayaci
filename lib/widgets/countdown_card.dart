@@ -63,122 +63,18 @@ class _CountdownCardState extends State<CountdownCard> {
     'Cumartesi', 'Pazar',
   ];
 
-  // ── Size-dependent dimensions ──
-  // Heights chosen so all content (badge, circle, title, date) fits
-  // without overflow at any font/padding combination.
-  //   Large  = 220  (original, untouched)
-  //   Medium = 165  (≈75 %)
-  //   Small  = 125  (≈57 %)
-
-  double get _cardHeight {
+  // AspectRatio per size – drives the card height from available width.
+  //   Large  16/9  ≈ 1.78  (original ~220px on 375-wide screen)
+  //   Medium 16/7  ≈ 2.29
+  //   Small  16/5  =  3.20
+  double get _aspectRatio {
     switch (widget.cardSize) {
       case 'small':
-        return 125.0;
+        return 16 / 5;
       case 'medium':
-        return 165.0;
+        return 16 / 7;
       default:
-        return 220.0;
-    }
-  }
-
-  double get _titleFont {
-    switch (widget.cardSize) {
-      case 'small':
-        return 13.0;
-      case 'medium':
-        return 16.0;
-      default:
-        return 20.0;
-    }
-  }
-
-  double get _dateFont {
-    switch (widget.cardSize) {
-      case 'small':
-        return 8.0;
-      case 'medium':
-        return 9.5;
-      default:
-        return 11.0;
-    }
-  }
-
-  double get _circleSize {
-    switch (widget.cardSize) {
-      case 'small':
-        return 34.0;
-      case 'medium':
-        return 42.0;
-      default:
-        return 50.0;
-    }
-  }
-
-  double get _circleRadius {
-    switch (widget.cardSize) {
-      case 'small':
-        return 15.0;
-      case 'medium':
-        return 19.0;
-      default:
-        return 23.0;
-    }
-  }
-
-  double get _countFont {
-    switch (widget.cardSize) {
-      case 'small':
-        return 12.0;
-      case 'medium':
-        return 14.0;
-      default:
-        return 17.0;
-    }
-  }
-
-  double get _countLabelFont {
-    switch (widget.cardSize) {
-      case 'small':
-        return 5.5;
-      case 'medium':
-        return 6.5;
-      default:
-        return 8.0;
-    }
-  }
-
-  double get _badgeEmojiFont {
-    switch (widget.cardSize) {
-      case 'small':
-        return 7.0;
-      case 'medium':
-        return 8.0;
-      default:
-        return 9.0;
-    }
-  }
-
-  double get _badgeTextFont => _badgeEmojiFont;
-
-  double get _bottomPad {
-    switch (widget.cardSize) {
-      case 'small':
-        return 8.0;
-      case 'medium':
-        return 10.0;
-      default:
-        return 14.0;
-    }
-  }
-
-  double get _topPad {
-    switch (widget.cardSize) {
-      case 'small':
-        return 6.0;
-      case 'medium':
-        return 8.0;
-      default:
-        return 10.0;
+        return 16 / 9;
     }
   }
 
@@ -242,170 +138,215 @@ class _CountdownCardState extends State<CountdownCard> {
             },
             child: Opacity(
               opacity: isPast ? 0.7 : 1.0,
-              child: SizedBox(
-                height: _cardHeight,
+              child: AspectRatio(
+                aspectRatio: _aspectRatio,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(20),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      // Photo
-                      Image.asset(
-                        imagePath,
-                        fit: BoxFit.cover,
-                        cacheWidth: 800,
-                        cacheHeight: 400,
-                        colorBlendMode:
-                            isPast ? BlendMode.saturation : null,
-                        color: isPast ? Colors.grey : null,
-                        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-                          if (wasSynchronouslyLoaded) return child;
-                          if (frame != null) {
-                            return AnimatedOpacity(
-                              opacity: 1.0,
-                              duration: const Duration(milliseconds: 300),
-                              child: child,
-                            );
-                          }
-                          return Container(
-                            color: const Color(0xFF2C2C2E),
-                          ).animate(onPlay: (c) => c.repeat())
-                            .shimmer(
-                              duration: 1200.ms,
-                              color: const Color(0x33FFFFFF),
-                            );
-                        },
-                      ),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final h = constraints.maxHeight;
+                      final w = constraints.maxWidth;
+                      // All sizes derived from actual card height
+                      final topPad = h * 0.045;
+                      final bottomPad = h * 0.065;
+                      final circleSize = (h * 0.23).clamp(28.0, 50.0);
+                      final circleRadius = circleSize * 0.46;
+                      final circleLineW = circleSize < 36 ? 1.5 : 2.0;
+                      final countFontSz = (circleSize * 0.34).clamp(9.0, 17.0);
+                      final countLabelSz = (circleSize * 0.16).clamp(4.5, 8.0);
+                      final badgeFontSz = (h * 0.042).clamp(6.0, 9.0);
+                      final badgeHPad = badgeFontSz < 7.5 ? 5.0 : 8.0;
+                      final badgeVPad = badgeFontSz < 7.5 ? 2.0 : 4.0;
+                      final titleFontSz = (h * 0.092).clamp(11.0, 20.0);
+                      final dateFontSz = (h * 0.05).clamp(7.0, 11.0);
+                      final titleMaxLines = h < 140 ? 1 : 2;
+                      final bugunFontSz = (h * 0.05).clamp(7.0, 11.0);
+                      final bugunHPad = bugunFontSz < 9 ? 8.0 : 14.0;
+                      final bugunVPad = bugunFontSz < 9 ? 2.0 : 4.0;
 
-                      // Gradient
-                      Positioned(
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: _cardHeight * 0.60,
-                        child: Container(
-                          decoration: const BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Color(0x00000000),
-                                Color(0xB3000000),
-                              ],
-                            ),
+                      return Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          // Photo
+                          Image.asset(
+                            imagePath,
+                            fit: BoxFit.cover,
+                            cacheWidth: 800,
+                            cacheHeight: 400,
+                            colorBlendMode:
+                                isPast ? BlendMode.saturation : null,
+                            color: isPast ? Colors.grey : null,
+                            frameBuilder: (context, child, frame,
+                                wasSynchronouslyLoaded) {
+                              if (wasSynchronouslyLoaded) return child;
+                              if (frame != null) {
+                                return AnimatedOpacity(
+                                  opacity: 1.0,
+                                  duration:
+                                      const Duration(milliseconds: 300),
+                                  child: child,
+                                );
+                              }
+                              return Container(
+                                color: const Color(0xFF2C2C2E),
+                              )
+                                  .animate(onPlay: (c) => c.repeat())
+                                  .shimmer(
+                                    duration: 1200.ms,
+                                    color: const Color(0x33FFFFFF),
+                                  );
+                            },
                           ),
-                        ),
-                      ),
 
-                      // Category badge (translucent)
-                      Positioned(
-                        top: _topPad,
-                        left: _topPad,
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: widget.cardSize == 'small' ? 5 : 8,
-                              vertical: widget.cardSize == 'small' ? 2 : 4),
-                          decoration: BoxDecoration(
-                            color: catColor.withValues(alpha: 0.7),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(catEmoji,
-                                  style: TextStyle(fontSize: _badgeEmojiFont)),
-                              SizedBox(width: widget.cardSize == 'small' ? 2 : 3),
-                              Text(
-                                widget.event.category,
-                                style: GoogleFonts.poppins(
-                                  fontSize: _badgeTextFont,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
+                          // Gradient
+                          Positioned(
+                            bottom: 0,
+                            left: 0,
+                            right: 0,
+                            height: h * 0.65,
+                            child: Container(
+                              decoration: const BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Color(0x00000000),
+                                    Color(0xB3000000),
+                                  ],
                                 ),
                               ),
-                            ],
+                            ),
                           ),
-                        ),
-                      ),
 
-                      // Countdown circle
-                      Positioned(
-                        top: _topPad,
-                        right: _topPad,
-                        child: _buildCountdownCircle(
-                            widget.event, isToday, isPast, catColor),
-                      ),
-
-                      // "BUGÜN" badge
-                      if (isToday)
-                        Positioned(
-                          top: _topPad,
-                          left: 0,
-                          right: 0,
-                          child: Center(
+                          // Category badge
+                          Positioned(
+                            top: topPad,
+                            left: topPad,
                             child: Container(
                               padding: EdgeInsets.symmetric(
-                                  horizontal: widget.cardSize == 'small' ? 8 : 14,
-                                  vertical: widget.cardSize == 'small' ? 2 : 4),
+                                  horizontal: badgeHPad,
+                                  vertical: badgeVPad),
                               decoration: BoxDecoration(
-                                color: AppTheme.accent,
-                                borderRadius: BorderRadius.circular(12),
+                                color: catColor.withValues(alpha: 0.7),
+                                borderRadius: BorderRadius.circular(16),
                               ),
-                              child: Text(
-                                'BUGÜN',
-                                style: GoogleFonts.poppins(
-                                  fontSize: widget.cardSize == 'small' ? 7 : (widget.cardSize == 'medium' ? 9 : 11),
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                  letterSpacing: 1,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-
-                      // Title + Date
-                      Positioned(
-                        bottom: _bottomPad,
-                        left: _bottomPad,
-                        right: _bottomPad,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              widget.event.title,
-                              textAlign: TextAlign.center,
-                              maxLines: widget.cardSize == 'small' ? 1 : 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.poppins(
-                                fontSize: _titleFont,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                                height: 1.15,
-                                shadows: const [
-                                  Shadow(
-                                    blurRadius: 8,
-                                    color: Color(0x80000000),
-                                    offset: Offset(0, 2),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(catEmoji,
+                                      style: TextStyle(
+                                          fontSize: badgeFontSz)),
+                                  SizedBox(
+                                      width:
+                                          badgeFontSz < 7.5 ? 2 : 3),
+                                  ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                        maxWidth: w * 0.45),
+                                    child: Text(
+                                      widget.event.category,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: GoogleFonts.poppins(
+                                        fontSize: badgeFontSz,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
                             ),
-                            const SizedBox(height: 2),
-                            Text(
-                              _formatDate(widget.event.targetDate),
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.poppins(
-                                fontSize: _dateFont,
-                                fontWeight: FontWeight.w400,
-                                color: const Color(0xA6FFFFFF),
-                                letterSpacing: 0.3,
+                          ),
+
+                          // Countdown circle
+                          Positioned(
+                            top: topPad,
+                            right: topPad,
+                            child: _buildCountdownCircle(
+                              event: widget.event,
+                              isToday: isToday,
+                              isPast: isPast,
+                              size: circleSize,
+                              radius: circleRadius,
+                              lineWidth: circleLineW,
+                              countFontSize: countFontSz,
+                              labelFontSize: countLabelSz,
+                            ),
+                          ),
+
+                          // "BUGÜN" badge
+                          if (isToday)
+                            Positioned(
+                              top: topPad,
+                              left: 0,
+                              right: 0,
+                              child: Center(
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: bugunHPad,
+                                      vertical: bugunVPad),
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.accent,
+                                    borderRadius:
+                                        BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    'BUGÜN',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: bugunFontSz,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                      letterSpacing: 1,
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                    ],
+
+                          // Title + Date
+                          Positioned(
+                            bottom: bottomPad,
+                            left: bottomPad,
+                            right: bottomPad,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  widget.event.title,
+                                  textAlign: TextAlign.center,
+                                  maxLines: titleMaxLines,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: titleFontSz,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                    height: 1.15,
+                                    shadows: const [
+                                      Shadow(
+                                        blurRadius: 8,
+                                        color: Color(0x80000000),
+                                        offset: Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(height: h * 0.01),
+                                Text(
+                                  _formatDate(widget.event.targetDate),
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: dateFontSz,
+                                    fontWeight: FontWeight.w400,
+                                    color: const Color(0xA6FFFFFF),
+                                    letterSpacing: 0.3,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ),
               ),
@@ -416,8 +357,16 @@ class _CountdownCardState extends State<CountdownCard> {
     );
   }
 
-  Widget _buildCountdownCircle(
-      EventModel event, bool isToday, bool isPast, Color catColor) {
+  Widget _buildCountdownCircle({
+    required EventModel event,
+    required bool isToday,
+    required bool isPast,
+    required double size,
+    required double radius,
+    required double lineWidth,
+    required double countFontSize,
+    required double labelFontSize,
+  }) {
     final days = event.daysRemaining;
     final absDays = days.abs();
 
@@ -442,16 +391,16 @@ class _CountdownCardState extends State<CountdownCard> {
     const progressColor = AppTheme.accent;
 
     return Container(
-      width: _circleSize,
-      height: _circleSize,
+      width: size,
+      height: size,
       decoration: const BoxDecoration(
         color: Color(0x55000000),
         shape: BoxShape.circle,
       ),
       child: Center(
         child: CircularPercentIndicator(
-          radius: _circleRadius,
-          lineWidth: widget.cardSize == 'small' ? 1.5 : 2.0,
+          radius: radius,
+          lineWidth: lineWidth,
           percent: percent,
           animation: true,
           animationDuration: 800,
@@ -462,28 +411,31 @@ class _CountdownCardState extends State<CountdownCard> {
                   ? const Color(0x99FFFFFF)
                   : progressColor,
           backgroundColor: const Color(0x26FFFFFF),
-          center: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                countText,
-                style: GoogleFonts.poppins(
-                  fontSize: _countFont,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                  height: 1.1,
+          center: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  countText,
+                  style: GoogleFonts.poppins(
+                    fontSize: countFontSize,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    height: 1.1,
+                  ),
                 ),
-              ),
-              Text(
-                labelText,
-                style: GoogleFonts.poppins(
-                  fontSize: _countLabelFont,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xB3FFFFFF),
-                  height: 1.0,
+                Text(
+                  labelText,
+                  style: GoogleFonts.poppins(
+                    fontSize: labelFontSize,
+                    fontWeight: FontWeight.w500,
+                    color: const Color(0xB3FFFFFF),
+                    height: 1.0,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
