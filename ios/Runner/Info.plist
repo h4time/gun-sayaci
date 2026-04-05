@@ -30,6 +30,12 @@
 	<true/>
 	<key>MinimumOSVersion</key>
 	<string>15.0</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Etkinliklerinize fotoğraf çekebilmeniz için kamera erişimi gereklidir.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Paylaşılan görselleri kaydedebilmek için fotoğraf kütüphanesi erişimi gereklidir.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Etkinliklerinize fotoğraf ekleyebilmeniz için fotoğraf kütüphanenize erişim gereklidir.</string>
 	<key>NSUserNotificationsUsageDescription</key>
 	<string>Etkinlikleriniz yaklaştığında size hatırlatma göndermek için bildirim izni gereklidir.</string>
 	<key>UIApplicationSceneManifest</key>
