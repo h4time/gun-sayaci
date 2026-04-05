@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../models/event_model.dart';
 import '../theme/app_theme.dart';
 
@@ -165,9 +166,28 @@ class _CountdownCardState extends State<CountdownCard>
                       Image.asset(
                         imagePath,
                         fit: BoxFit.cover,
+                        cacheWidth: 800,
+                        cacheHeight: 400,
                         colorBlendMode:
                             isPast ? BlendMode.saturation : null,
                         color: isPast ? Colors.grey : null,
+                        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+                          if (wasSynchronouslyLoaded) return child;
+                          if (frame != null) {
+                            return AnimatedOpacity(
+                              opacity: 1.0,
+                              duration: const Duration(milliseconds: 300),
+                              child: child,
+                            );
+                          }
+                          return Container(
+                            color: const Color(0xFF2C2C2E),
+                          ).animate(onPlay: (c) => c.repeat())
+                            .shimmer(
+                              duration: 1200.ms,
+                              color: const Color(0x33FFFFFF),
+                            );
+                        },
                       ),
 
                       // Gradient

@@ -27,6 +27,18 @@ class _HomeScreenState extends State<HomeScreen> {
   final StorageService _storageService = StorageService();
   String _selectedCategory = 'Tümü';
   int _selectedTab = 1; // 0=Geçmiş, 1=Yaklaşan
+  bool _imagesPrecached = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_imagesPrecached) {
+      _imagesPrecached = true;
+      for (final path in AppTheme.categoryImages.values) {
+        precacheImage(AssetImage(path), context);
+      }
+    }
+  }
 
   final List<String> _filters = [
     'Tümü',

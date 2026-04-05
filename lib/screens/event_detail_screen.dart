@@ -73,6 +73,8 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
             child: Image.asset(
               imagePath,
               fit: BoxFit.cover,
+              cacheWidth: 900,
+              cacheHeight: 1600,
               colorBlendMode: isPast ? BlendMode.saturation : null,
               color: isPast ? Colors.grey : null,
             ),
