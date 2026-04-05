@@ -13,7 +13,13 @@
       "Bash(dart analyze:*)",
       "Bash(dart pub:*)",
       "Read(//c/Users/USER/AppData/Local/Pub/Cache/hosted/pub.dev/file_picker-11.0.1/lib/**)",
-      "Bash(ls c:/Users/USER/Desktop/countdown_app/android/app/src/main/res/mipmap-*/)"
+      "Bash(ls c:/Users/USER/Desktop/countdown_app/android/app/src/main/res/mipmap-*/)",
+      "Read(//c/Users/USER/AppData/Local/Pub/Cache/hosted/pub.dev/percent_indicator-4.2.5/lib/**)",
+      "Bash(flutter install:*)",
+      "Bash(adb -s emulator-5554 install -r build/app/outputs/flutter-apk/app-debug.apk)",
+      "Read(//c/Users/USER/AppData/Local/Android/**)",
+      "Bash(/c/Users/USER/AppData/Local/Android/Sdk/platform-tools/adb.exe -s emulator-5554 install -r build/app/outputs/flutter-apk/app-debug.apk)",
+      "Bash(flutter test:*)"
     ]
   }
 }
