@@ -7,7 +7,12 @@ import UIKit
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    let controller = window?.rootViewController as! FlutterViewController
+    GeneratedPluginRegistrant.register(with: self)
+
+    guard let controller = window?.rootViewController as? FlutterViewController else {
+      return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+    }
+
     let iconChannel = FlutterMethodChannel(
       name: "com.gunsayaci/app_icon",
       binaryMessenger: controller.binaryMessenger
@@ -34,7 +39,6 @@ import UIKit
         result(FlutterMethodNotImplemented)
       }
     }
-    GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 }
