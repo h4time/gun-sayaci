@@ -18,6 +18,7 @@ import '../models/event_model.dart';
 import '../theme/app_theme.dart';
 import 'event_size_screen.dart';
 import 'app_icon_screen.dart';
+import 'category_themes_screen.dart';
 
 class PreferencesScreen extends StatefulWidget {
   const PreferencesScreen({super.key});
@@ -728,6 +729,25 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                           ),
                         ),
                       ],
+
+                      const SizedBox(height: 8),
+                      _settingsCard(
+                        icon: Icons.palette_outlined,
+                        label: 'Kategori Temaları',
+                        cardBg: cardBg,
+                        textColor: textColor,
+                        secondaryColor: secondaryColor,
+                        onTap: () async {
+                          await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const CategoryThemesScreen()),
+                          );
+                          // Tema değişmiş olabilir, cache'i yenile
+                          await AppTheme.loadCategoryThemes();
+                          if (mounted) setState(() {});
+                        },
+                      ),
 
                       const SizedBox(height: 24),
 

@@ -29,6 +29,7 @@ dependencies:
   package_info_plus: ^9.0.1
   file_picker: ^11.0.1
   path_provider: ^2.1.5
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:
@@ -51,6 +52,8 @@ flutter:
     - assets/images/exam.jpg
     - assets/images/seyahat.jpg
     - assets/images/other.jpg
+    - assets/images/spor.jpg
+    - assets/images/concert.jpg
     - assets/icons/app_icon_light.png
     - assets/icons/app_icon_dark.png
     - assets/icons/cake.png
@@ -68,3 +71,12 @@ flutter:
     - assets/icons/icon_lavender.png
     - assets/icons/icon_party.png
     - assets/icons/icon_teal_calendar.png
+    - assets/icons/cat_holiday.png
+    - assets/category_themes/birthday/
+    - assets/category_themes/holiday/
+    - assets/category_themes/wedding/
+    - assets/category_themes/exam/
+    - assets/category_themes/travel/
+    - assets/category_themes/concert/
+    - assets/category_themes/sport/
+    - assets/category_themes/other/

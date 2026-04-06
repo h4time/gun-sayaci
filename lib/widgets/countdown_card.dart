@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -168,35 +169,50 @@ class _CountdownCardState extends State<CountdownCard> {
                         fit: StackFit.expand,
                         children: [
                           // Photo
-                          Image.asset(
-                            imagePath,
-                            fit: BoxFit.cover,
-                            cacheWidth: 800,
-                            cacheHeight: 400,
-                            colorBlendMode:
-                                isPast ? BlendMode.saturation : null,
-                            color: isPast ? Colors.grey : null,
-                            frameBuilder: (context, child, frame,
-                                wasSynchronouslyLoaded) {
-                              if (wasSynchronouslyLoaded) return child;
-                              if (frame != null) {
-                                return AnimatedOpacity(
-                                  opacity: 1.0,
-                                  duration:
-                                      const Duration(milliseconds: 300),
-                                  child: child,
-                                );
-                              }
-                              return Container(
-                                color: const Color(0xFF2C2C2E),
-                              )
-                                  .animate(onPlay: (c) => c.repeat())
-                                  .shimmer(
-                                    duration: 1200.ms,
-                                    color: const Color(0x33FFFFFF),
-                                  );
-                            },
-                          ),
+                          AppTheme.isFilePath(imagePath)
+                              ? Image.file(
+                                  File(imagePath),
+                                  fit: BoxFit.cover,
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  errorBuilder: (context, error, stack) {
+                                    return Image.asset(
+                                      AppTheme.categoryImages[widget.event.category] ?? 'assets/images/celebration.jpg',
+                                      fit: BoxFit.cover,
+                                      cacheWidth: 800,
+                                      cacheHeight: 400,
+                                    );
+                                  },
+                                )
+                              : Image.asset(
+                                  imagePath,
+                                  fit: BoxFit.cover,
+                                  cacheWidth: 800,
+                                  cacheHeight: 400,
+                                  colorBlendMode:
+                                      isPast ? BlendMode.saturation : null,
+                                  color: isPast ? Colors.grey : null,
+                                  frameBuilder: (context, child, frame,
+                                      wasSynchronouslyLoaded) {
+                                    if (wasSynchronouslyLoaded) return child;
+                                    if (frame != null) {
+                                      return AnimatedOpacity(
+                                        opacity: 1.0,
+                                        duration:
+                                            const Duration(milliseconds: 300),
+                                        child: child,
+                                      );
+                                    }
+                                    return Container(
+                                      color: const Color(0xFF2C2C2E),
+                                    )
+                                        .animate(onPlay: (c) => c.repeat())
+                                        .shimmer(
+                                          duration: 1200.ms,
+                                          color: const Color(0x33FFFFFF),
+                                        );
+                                  },
+                                ),
 
                           // Gradient
                           Positioned(
@@ -222,36 +238,15 @@ class _CountdownCardState extends State<CountdownCard> {
                           Positioned(
                             top: topPad,
                             left: topPad,
-                            child: Container(
-                              padding: EdgeInsets.symmetric(
-                                  horizontal: badgeHPad,
-                                  vertical: badgeVPad),
-                              decoration: BoxDecoration(
-                                color: catColor.withValues(alpha: 0.7),
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(catEmoji,
-                                      style: TextStyle(
-                                          fontSize: badgeFontSz)),
-                                  SizedBox(
-                                      width:
-                                          badgeFontSz < 7.5 ? 2 : 3),
-                                  ConstrainedBox(
-                                    constraints: BoxConstraints(
-                                        maxWidth: w * 0.45),
-                                    child: Text(
-                                      widget.event.category,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: GoogleFonts.poppins(
-                                        fontSize: badgeFontSz,
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.white,
-                                      ),
-                                    ),
+                            child: Text(
+                              catEmoji,
+                              style: TextStyle(
+                                fontSize: (h * 0.12).clamp(18.0, 28.0),
+                                shadows: const [
+                                  Shadow(
+                                    blurRadius: 6,
+                                    color: Color(0x66000000),
+                                    offset: Offset(0, 2),
                                   ),
                                 ],
                               ),

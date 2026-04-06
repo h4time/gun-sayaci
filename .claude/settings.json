@@ -24,7 +24,9 @@
       "Read(//c/Users/USER/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_dynamic_icon-2.1.0/android/**)",
       "Bash(cp ios/Runner/AlternateIcons/*.png ios/Runner/)",
       "Bash(ls ios/Runner/Icon*.png)",
-      "Bash(git rm:*)"
+      "Bash(git rm:*)",
+      "Bash(ls c:/Users/USER/Desktop/countdown_app/ios/Runner/Icon*.png)",
+      "Bash(ls c:/Users/USER/Desktop/countdown_app/ios/Runner/*.png)"
     ]
   }
 }

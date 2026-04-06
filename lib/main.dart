@@ -22,6 +22,8 @@ void main() async {
     DeviceOrientation.portraitUp,
   ]);
 
+  await AppTheme.loadCategoryThemes();
+
   runApp(const GunSayaciApp());
 }
 

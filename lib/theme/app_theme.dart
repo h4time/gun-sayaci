@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AppTheme {
   // === Light Theme Colors ===
@@ -20,6 +21,8 @@ class AppTheme {
   static const Color darkInput = Color(0xFF2C2C2E);
   static const Color darkSwitchInactive = Color(0xFF3A3A3C);
 
+  static Map<String, String> _categoryThemeCache = {};
+
   // Category image mapping
   static const Map<String, String> categoryImages = {
     'Doğum Günü': 'assets/images/birthday.jpg',
@@ -27,8 +30,8 @@ class AppTheme {
     'Düğün/Yıldönümü': 'assets/images/celebration.jpg',
     'Sınav/İş': 'assets/images/exam.jpg',
     'Seyahat': 'assets/images/seyahat.jpg',
-    'Konser/Etkinlik': 'assets/images/celebration.jpg',
-    'Spor/Hedef': 'assets/images/other.jpg',
+    'Konser/Etkinlik': 'assets/images/concert.jpg',
+    'Spor/Hedef': 'assets/images/spor.jpg',
   };
 
   // Category icon mapping
@@ -52,7 +55,52 @@ class AppTheme {
   };
 
   static String getImageForCategory(String category) {
-    return categoryImages[category] ?? 'assets/images/celebration.jpg';
+    // Önce kullanıcının seçtiği temayı kontrol et
+    if (_categoryThemeCache.containsKey(category)) {
+      return _categoryThemeCache[category]!;
+    }
+    // Custom kategoriler için 'other' temasını kontrol et
+    if (!categoryImages.containsKey(category) && _categoryThemeCache.containsKey('other')) {
+      return _categoryThemeCache['other']!;
+    }
+    // Varsayılan
+    return categoryImages[category] ?? 'assets/images/other.jpg';
+  }
+
+  static bool isFilePath(String path) {
+    return path.startsWith('/') || path.startsWith('file:');
+  }
+
+  static Future<void> loadCategoryThemes() async {
+    final prefs = await SharedPreferences.getInstance();
+    _categoryThemeCache.clear();
+    for (final cat in categoryImages.keys) {
+      final saved = prefs.getString('categoryTheme_$cat');
+      if (saved != null) _categoryThemeCache[cat] = saved;
+    }
+    final otherSaved = prefs.getString('categoryTheme_other');
+    if (otherSaved != null) _categoryThemeCache['other'] = otherSaved;
+  }
+
+  static Future<void> setCategoryTheme(String category, String imagePath) async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = categoryImages.containsKey(category) ? 'categoryTheme_$category' : 'categoryTheme_other';
+    await prefs.setString(key, imagePath);
+    _categoryThemeCache[categoryImages.containsKey(category) ? category : 'other'] = imagePath;
+  }
+
+  static Future<void> resetCategoryTheme(String category) async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = categoryImages.containsKey(category) ? 'categoryTheme_$category' : 'categoryTheme_other';
+    await prefs.remove(key);
+    _categoryThemeCache.remove(categoryImages.containsKey(category) ? category : 'other');
+  }
+
+  static String? getCurrentTheme(String category) {
+    if (categoryImages.containsKey(category)) {
+      return _categoryThemeCache[category];
+    }
+    return _categoryThemeCache['other'];
   }
 
   static String? getIconForCategory(String category) {
