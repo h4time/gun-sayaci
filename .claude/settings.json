@@ -21,7 +21,10 @@
       "Bash(/c/Users/USER/AppData/Local/Android/Sdk/platform-tools/adb.exe -s emulator-5554 install -r build/app/outputs/flutter-apk/app-debug.apk)",
       "Bash(flutter test:*)",
       "Bash(ls c:/Users/USER/Desktop/countdown_app/android/*.gradle)",
-      "Read(//c/Users/USER/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_dynamic_icon-2.1.0/android/**)"
+      "Read(//c/Users/USER/AppData/Local/Pub/Cache/hosted/pub.dev/flutter_dynamic_icon-2.1.0/android/**)",
+      "Bash(cp ios/Runner/AlternateIcons/*.png ios/Runner/)",
+      "Bash(ls ios/Runner/Icon*.png)",
+      "Bash(git rm:*)"
     ]
   }
 }
