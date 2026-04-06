@@ -157,7 +157,7 @@ class _CountdownCardState extends State<CountdownCard> {
                       final badgeFontSz = (h * 0.042).clamp(6.0, 9.0);
                       final badgeHPad = badgeFontSz < 7.5 ? 5.0 : 8.0;
                       final badgeVPad = badgeFontSz < 7.5 ? 2.0 : 4.0;
-                      final titleFontSz = (h * 0.092).clamp(11.0, 20.0);
+                      final titleFontSz = (h * 0.1058).clamp(12.65, 23.0);
                       final dateFontSz = (h * 0.05).clamp(7.0, 11.0);
                       final titleMaxLines = h < 140 ? 1 : 2;
                       final bugunFontSz = (h * 0.05).clamp(7.0, 11.0);
@@ -319,6 +319,7 @@ class _CountdownCardState extends State<CountdownCard> {
                                   style: GoogleFonts.poppins(
                                     fontSize: titleFontSz,
                                     fontWeight: FontWeight.w700,
+                                    letterSpacing: -0.5,
                                     color: Colors.white,
                                     height: 1.15,
                                     shadows: const [

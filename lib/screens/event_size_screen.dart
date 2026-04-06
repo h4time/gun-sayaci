@@ -105,7 +105,7 @@ class _EventSizeScreenState extends State<EventSizeScreen> {
                           builder: (context, constraints) {
                             final h = constraints.maxHeight;
                             final titleFontSz =
-                                (h * 0.092).clamp(11.0, 20.0);
+                                (h * 0.1058).clamp(12.65, 23.0);
                             final dateFontSz =
                                 (h * 0.05).clamp(7.0, 11.0);
                             final bottomPad = h * 0.065;
@@ -175,6 +175,7 @@ class _EventSizeScreenState extends State<EventSizeScreen> {
                                           style: GoogleFonts.poppins(
                                             fontSize: titleFontSz,
                                             fontWeight: FontWeight.w700,
+                                            letterSpacing: -0.5,
                                             color: Colors.white,
                                             height: 1.15,
                                           ),
