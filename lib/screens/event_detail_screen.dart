@@ -1,5 +1,4 @@
-import 'dart:async';
-import 'dart:ui';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -19,17 +18,11 @@ class EventDetailScreen extends StatefulWidget {
 }
 
 class _EventDetailScreenState extends State<EventDetailScreen> {
-  late Timer _timer;
-  Duration _remaining = Duration.zero;
   bool _confettiPlayed = false;
 
   @override
   void initState() {
     super.initState();
-    _updateRemaining();
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      _updateRemaining();
-    });
     // Confetti + haptic on first open if today
     if (widget.event.isToday) {
       _confettiPlayed = true;
@@ -39,57 +32,79 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
     }
   }
 
-  void _updateRemaining() {
-    setState(() {
-      _remaining = widget.event.targetDate.difference(DateTime.now());
-      if (_remaining.isNegative) _remaining = Duration.zero;
-    });
-  }
-
-  @override
-  void dispose() {
-    _timer.cancel();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     final imagePath = AppTheme.getImageForCategory(widget.event.category);
     final isToday = widget.event.isToday;
     final isPast = widget.event.isExpired && !isToday;
-
-    final days = _remaining.inDays;
-    final hours = _remaining.inHours % 24;
-    final minutes = _remaining.inMinutes % 60;
-    final seconds = _remaining.inSeconds % 60;
+    final daysAbs = widget.event.daysRemaining.abs();
 
     return Scaffold(
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // Background
-          ImageFiltered(
-            imageFilter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
-            child: Image.asset(
-              imagePath,
-              fit: BoxFit.cover,
-              cacheWidth: 900,
-              cacheHeight: 1600,
-              colorBlendMode: isPast ? BlendMode.saturation : null,
-              color: isPast ? Colors.grey : null,
+          // Background photo — full screen, no blur
+          AppTheme.isFilePath(imagePath)
+              ? Image.file(
+                  File(imagePath),
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
+                  alignment: Alignment.center,
+                  errorBuilder: (context, error, stack) => Image.asset(
+                    AppTheme.categoryImages[widget.event.category] ??
+                        'assets/images/celebration.jpg',
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                  ),
+                )
+              : Image.asset(
+                  imagePath,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
+                  alignment: Alignment.center,
+                  cacheWidth: 900,
+                  cacheHeight: 1600,
+                ),
+
+          // Top gradient — for button visibility
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 160,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.5),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
             ),
           ),
 
-          // Overlay
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.black.withValues(alpha: 0.3),
-                  Colors.black.withValues(alpha: 0.7),
-                ],
+          // Bottom gradient — for text readability
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 360,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.8),
+                    Colors.transparent,
+                  ],
+                ),
               ),
             ),
           ),
@@ -105,249 +120,175 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                 // Top bar
                 Padding(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Row(
                     children: [
-                      _circleBtn(Icons.arrow_back_ios_new_rounded, () {
-                        HapticFeedback.lightImpact();
-                        Navigator.pop(context);
-                      }),
+                      // X close button
+                      GestureDetector(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          Navigator.pop(context);
+                        },
+                        child: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: const Color(0x0F000000),
+                              width: 1,
+                            ),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x14000000),
+                                blurRadius: 8,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(Icons.close,
+                              size: 22, color: Color(0xFF1A1A1A)),
+                        ),
+                      ),
                       const Spacer(),
-                      _circleBtn(Icons.edit_rounded, () {
-                        HapticFeedback.lightImpact();
-                        _editEvent();
-                      }),
-                      const SizedBox(width: 8),
-                      _circleBtn(Icons.share_rounded, () {
-                        HapticFeedback.lightImpact();
-                        _shareEvent();
-                      }),
+                      // Share pill button
+                      GestureDetector(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          _shareEvent();
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(
+                              color: const Color(0x0F000000),
+                              width: 1,
+                            ),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x14000000),
+                                blurRadius: 8,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            'Paylaş',
+                            style: GoogleFonts.poppins(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF1A1A1A),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const Spacer(),
+                      // More (edit) button
+                      GestureDetector(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          _editEvent();
+                        },
+                        child: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: const Color(0x0F000000),
+                              width: 1,
+                            ),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x14000000),
+                                blurRadius: 8,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(Icons.more_horiz,
+                              size: 22, color: Color(0xFF1A1A1A)),
+                        ),
+                      ),
                     ],
                   ),
                 ),
 
                 const Spacer(),
 
-                // Big countdown
-                if (isToday) ...[
-                  Text(
-                    'Bugün!',
-                    style: GoogleFonts.poppins(
-                      fontSize: 64,
-                      fontWeight: FontWeight.w800,
-                      color: const Color(0xFFFFD700),
-                      height: 1.0,
-                      shadows: [
-                        Shadow(
-                          blurRadius: 20,
-                          color: Colors.black.withValues(alpha: 0.5),
-                        ),
-                      ],
-                    ),
+                // Countdown label
+                Text(
+                  isToday
+                      ? 'BUGÜN!'
+                      : isPast
+                          ? '$daysAbs GÜN ÖNCE'
+                          : '$daysAbs GÜN SONRA',
+                  style: GoogleFonts.poppins(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.white.withValues(alpha: 0.8),
+                    letterSpacing: 3,
                   ),
-                  const SizedBox(height: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: AppTheme.accent,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      'Kutlu Olsun!',
-                      style: GoogleFonts.poppins(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ] else ...[
-                  Text(
-                    '${widget.event.daysRemaining.abs()}',
-                    style: GoogleFonts.poppins(
-                      fontSize: 72,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                      height: 1.0,
-                      shadows: [
-                        Shadow(
-                          blurRadius: 20,
-                          color: Colors.black.withValues(alpha: 0.5),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    isPast ? 'gün önce' : 'gün',
-                    style: GoogleFonts.poppins(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w300,
-                      color: Colors.white.withValues(alpha: 0.85),
-                    ),
-                  ),
-                ],
+                ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
-                // Title
+                // Event title
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 32),
                   child: Text(
                     widget.event.title,
                     style: GoogleFonts.poppins(
-                      fontSize: 28,
+                      fontSize: 32,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
                       height: 1.2,
+                      shadows: [
+                        Shadow(
+                          offset: const Offset(0, 2),
+                          blurRadius: 12,
+                          color: Colors.black.withValues(alpha: 0.5),
+                        ),
+                      ],
                     ),
                     textAlign: TextAlign.center,
-                    maxLines: 3,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
 
-                const SizedBox(height: 8),
+                const SizedBox(height: 16),
 
-                // Category + Date
+                // Date pill
                 Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.4),
+                    ),
                   ),
                   child: Text(
-                    widget.event.category,
+                    _formatFullDate(widget.event.targetDate).toUpperCase(),
                     style: GoogleFonts.poppins(
                       fontSize: 13,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.white.withValues(alpha: 0.85),
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white.withValues(alpha: 0.7),
                     ),
                   ),
                 ),
 
-                const SizedBox(height: 6),
-
-                Text(
-                  _formatFullDate(widget.event.targetDate),
-                  style: GoogleFonts.poppins(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w400,
-                    color: Colors.white.withValues(alpha: 0.7),
-                  ),
-                ),
-
-                const SizedBox(height: 40),
-
-                // Countdown boxes
-                if (!isPast)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: Row(
-                      children: [
-                        _box(days.toString(), 'Gün'),
-                        const SizedBox(width: 10),
-                        _box(hours.toString().padLeft(2, '0'), 'Saat'),
-                        const SizedBox(width: 10),
-                        _box(minutes.toString().padLeft(2, '0'), 'Dakika'),
-                        const SizedBox(width: 10),
-                        _box(seconds.toString().padLeft(2, '0'), 'Saniye'),
-                      ],
-                    ),
-                  )
-                else
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 24),
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 18, horizontal: 24),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.15),
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.check_circle_rounded,
-                            color: Colors.white, size: 22),
-                        const SizedBox(width: 8),
-                        Text(
-                          '${widget.event.daysRemaining.abs()} gün önce tamamlandı',
-                          style: GoogleFonts.poppins(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                const Spacer(),
-                const SizedBox(height: 32),
+                const SizedBox(height: 48),
               ],
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _circleBtn(IconData icon, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.15),
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.1),
-          ),
-        ),
-        child: Icon(icon, size: 20, color: Colors.white),
-      ),
-    );
-  }
-
-  Widget _box(String value, String label) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.15),
-          ),
-        ),
-        child: Column(
-          children: [
-            Text(
-              value,
-              style: GoogleFonts.poppins(
-                fontSize: 30,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-                height: 1.0,
-              ),
-            ),
-            const SizedBox(height: 3),
-            Text(
-              label,
-              style: GoogleFonts.poppins(
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-                color: Colors.white.withValues(alpha: 0.6),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

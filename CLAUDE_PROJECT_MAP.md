@@ -118,6 +118,20 @@ SplashScreen (#ozelgunleriunutma fade) → HomeScreen
 | url_launcher | 6.3.1 | URL açma |
 | hive_generator | 2.0.1 | Hive code-gen |
 
+## Wiki Kuralı
+Her bug fix, hata çözümü veya önemli teknik karar sonrasında
+`C:\A\beyin2\raw\` klasörüne detaylı bir `.md` notu otomatik oluştur.
+
+**Not formatı:**
+- **Dosya adı:** `YYYY-MM-DD-kisa-aciklama.md`
+- Hata ne idi (tam hata mesajı)
+- Neden oldu
+- Nasıl çözüldü
+- Hangi dosyalar etkilendi
+- Gelecekte dikkat edilmesi gereken şey
+
+---
+
 ## Tamamlanan Tüm Adımlar
 - [x] Proje haritası + Tasarım rehberi
 - [x] Ana ekran (Days tarzı header, floating toggle, kartlar)
@@ -136,3 +150,10 @@ SplashScreen (#ozelgunleriunutma fade) → HomeScreen
 - [x] Adım 8: Menü yeniden düzenleme (Gece Modu → Tercihler)
 - [x] Adım 9: Dark mode (manual toggle, #0A0A0F bg)
 - [x] Adım 10: Splash (#ozelgunleriunutma), scroll physics
+
+
+
+
+## ÖNEMLİ KURALLAR
+- Yeni asset dosyası eklendiğinde pubspec.yaml'a da eklenmeli (assets/images/, assets/icons/, assets/category_themes/ vb.)
+- Her yeni görsel eklendikten sonra pubspec.yaml kontrol et

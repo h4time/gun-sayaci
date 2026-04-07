@@ -760,14 +760,14 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: Row(
           children: [
-            Icon(icon, size: 22, color: secondaryColor),
+            Icon(icon, size: 22, color: textColor),
             const SizedBox(width: 14),
             Expanded(
               child: Text(
                 label,
                 style: GoogleFonts.poppins(
                   fontSize: 16,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                   color: textColor,
                 ),
               ),

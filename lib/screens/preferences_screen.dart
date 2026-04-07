@@ -632,14 +632,14 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                         child: Row(
                           children: [
                             Icon(Icons.dark_mode_outlined,
-                                size: 22, color: secondaryColor),
+                                size: 22, color: textColor),
                             const SizedBox(width: 14),
                             Expanded(
                               child: Text(
                                 'Gece Modu',
                                 style: GoogleFonts.poppins(
                                   fontSize: 16,
-                                  fontWeight: FontWeight.w500,
+                                  fontWeight: FontWeight.w600,
                                   color: textColor,
                                 ),
                               ),
@@ -716,7 +716,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                                     'Uygulama İkonu',
                                     style: GoogleFonts.poppins(
                                       fontSize: 16,
-                                      fontWeight: FontWeight.w500,
+                                      fontWeight: FontWeight.w600,
                                       color: textColor,
                                     ),
                                   ),
@@ -882,14 +882,14 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
         ),
         child: Row(
           children: [
-            Icon(icon, size: 22, color: secondaryColor),
+            Icon(icon, size: 22, color: textColor),
             const SizedBox(width: 14),
             Expanded(
               child: Text(
                 label,
                 style: GoogleFonts.poppins(
                   fontSize: 16,
-                  fontWeight: FontWeight.w500,
+                  fontWeight: FontWeight.w600,
                   color: textColor,
                 ),
               ),

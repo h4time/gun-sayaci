@@ -31,9 +31,11 @@ class _AboutScreenState extends State<AboutScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? Colors.black : Colors.white;
+    final bgColor = isDark ? Colors.black : const Color(0xFFF5F5F0);
     final textColor = isDark ? Colors.white : AppTheme.primaryText;
     final secondaryColor = isDark ? Colors.grey[400]! : AppTheme.secondaryText;
+    final cardBg = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    const linkColor = Color(0xFF4A90D9);
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -70,204 +72,250 @@ class _AboutScreenState extends State<AboutScreen> {
 
             Expanded(
               child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 40),
-
-                      // App icon
-                      Container(
-                        width: 100,
-                        height: 100,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(24),
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              AppTheme.accent,
-                              AppTheme.accent.withValues(alpha: 0.7),
-                            ],
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color:
-                                  AppTheme.accent.withValues(alpha: 0.3),
-                              blurRadius: 20,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
-                        ),
-                        child: const Icon(Icons.timer_rounded,
-                            size: 48, color: Colors.white),
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 20, vertical: 16),
+                child: Column(
+                  children: [
+                    // Card 1: App Info
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: cardBg,
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                      const SizedBox(height: 24),
-
-                      Text(
-                        'Gün Sayacı',
-                        style: GoogleFonts.poppins(
-                          fontSize: 30,
-                          fontWeight: FontWeight.w700,
-                          color: textColor,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '#ozelgunleriunutma',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: -0.5,
-                          color: AppTheme.accent,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        _version,
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          color: secondaryColor,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      Text(
-                        'Özel günlerinizi asla unutmayın.\nDoğum günleri, bayramlar, yıldönümleri\nve daha fazlası için geri sayım yapın.',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                          color: secondaryColor,
-                          height: 1.6,
-                        ),
-                      ),
-
-                      const SizedBox(height: 32),
-
-                      // Developer section
-                      Text(
-                        'Geliştirici',
-                        style: GoogleFonts.poppins(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: secondaryColor,
-                          letterSpacing: 1,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'Ömer Faruk Öztürk',
-                        style: GoogleFonts.poppins(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w700,
-                          color: textColor,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      GestureDetector(
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          launchUrl(
-                              Uri.parse('https://ozelgunleriunutma.com'));
-                        },
-                        child: Text(
-                          'ozelgunleriunutma.com',
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: AppTheme.accent,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 28),
-
-                      // Social icons
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      child: Row(
                         children: [
-                          _socialButton(
-                            icon: Icons.camera_alt_outlined,
-                            label: 'Instagram',
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              launchUrl(Uri.parse(
-                                  'https://instagram.com/ozelgunleriunutma'));
-                            },
-                            isDark: isDark,
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(18),
+                            child: Image.asset(
+                              'assets/icons/icon_white.png',
+                              width: 72,
+                              height: 72,
+                              fit: BoxFit.cover,
+                            ),
                           ),
-                          const SizedBox(width: 16),
-                          _socialButton(
-                            icon: Icons.alternate_email_rounded,
-                            label: 'Threads',
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              launchUrl(Uri.parse(
-                                  'https://www.threads.net/@ozelgunleriunutma'));
-                            },
-                            isDark: isDark,
+                          const SizedBox(width: 20),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Gün Sayacı',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w700,
+                                    color: textColor,
+                                    letterSpacing: -0.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  _version,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w400,
+                                    color: secondaryColor,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () {
+                                        HapticFeedback.lightImpact();
+                                        launchUrl(Uri.parse(
+                                            'https://ozelgunleriunutma.com'));
+                                      },
+                                      child: Row(
+                                        mainAxisSize:
+                                            MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            'Website',
+                                            style:
+                                                GoogleFonts.poppins(
+                                              fontSize: 14,
+                                              fontWeight:
+                                                  FontWeight.w500,
+                                              color: linkColor,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 3),
+                                          const Icon(
+                                            Icons
+                                                .arrow_outward_rounded,
+                                            size: 14,
+                                            color: linkColor,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    GestureDetector(
+                                      onTap: () {
+                                        HapticFeedback.lightImpact();
+                                        launchUrl(Uri.parse(
+                                            'https://instagram.com/ozelgunleriunutma'));
+                                      },
+                                      child: Row(
+                                        mainAxisSize:
+                                            MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            'Instagram',
+                                            style:
+                                                GoogleFonts.poppins(
+                                              fontSize: 14,
+                                              fontWeight:
+                                                  FontWeight.w500,
+                                              color: linkColor,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 3),
+                                          const Icon(
+                                            Icons
+                                                .arrow_outward_rounded,
+                                            size: 14,
+                                            color: linkColor,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
+                    ),
 
-                      const SizedBox(height: 40),
+                    const SizedBox(height: 12),
 
-                      Text(
-                        'Sevgiyle yapıldı ❤️',
-                        style: GoogleFonts.poppins(
-                          fontSize: 13,
-                          color: secondaryColor,
-                        ),
+                    // Card 2: Developer
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: cardBg,
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                      const SizedBox(height: 24),
-                    ],
-                  ),
+                      child: Row(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(36),
+                            child: Image.asset(
+                              'assets/images/developer.jpg',
+                              width: 72,
+                              height: 72,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          const SizedBox(width: 20),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Ömer Faruk Öztürk',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
+                                    color: textColor,
+                                    letterSpacing: -0.3,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Geliştirici',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w400,
+                                    color: secondaryColor,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Row(
+                                  children: [
+                                    GestureDetector(
+                                      onTap: () {
+                                        HapticFeedback.lightImpact();
+                                        launchUrl(Uri.parse(
+                                            'https://ozelgunleriunutma.com'));
+                                      },
+                                      child: Row(
+                                        mainAxisSize:
+                                            MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            'Website',
+                                            style:
+                                                GoogleFonts.poppins(
+                                              fontSize: 14,
+                                              fontWeight:
+                                                  FontWeight.w500,
+                                              color: linkColor,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 3),
+                                          const Icon(
+                                            Icons
+                                                .arrow_outward_rounded,
+                                            size: 14,
+                                            color: linkColor,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    GestureDetector(
+                                      onTap: () {
+                                        HapticFeedback.lightImpact();
+                                        launchUrl(Uri.parse(
+                                            'https://youtube.com/@ozelgunleriunutma'));
+                                      },
+                                      child: Row(
+                                        mainAxisSize:
+                                            MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            'YouTube',
+                                            style:
+                                                GoogleFonts.poppins(
+                                              fontSize: 14,
+                                              fontWeight:
+                                                  FontWeight.w500,
+                                              color: linkColor,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 3),
+                                          const Icon(
+                                            Icons
+                                                .arrow_outward_rounded,
+                                            size: 14,
+                                            color: linkColor,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _socialButton({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-    required bool isDark,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  AppTheme.accent.withValues(alpha: 0.15),
-                  AppTheme.accent.withValues(alpha: 0.05),
-                ],
-              ),
-            ),
-            child: Icon(icon, size: 24, color: AppTheme.accent),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            style: GoogleFonts.poppins(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              color: isDark ? Colors.grey[400] : AppTheme.secondaryText,
-            ),
-          ),
-        ],
       ),
     );
   }

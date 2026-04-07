@@ -12,16 +12,16 @@ class SupportScreen extends StatefulWidget {
 }
 
 class _SupportScreenState extends State<SupportScreen> {
-  bool _webPressed = false;
-  bool _mailPressed = false;
+  final Map<int, bool> _expandedFaq = {};
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? Colors.black : Colors.white;
+    final bgColor = isDark ? Colors.black : const Color(0xFFF5F5F0);
     final textColor = isDark ? Colors.white : AppTheme.primaryText;
     final secondaryColor = isDark ? Colors.grey[400]! : AppTheme.secondaryText;
-    final cardBg = isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF5F5F0);
+    final cardBg = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final iconBg = isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7);
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -58,220 +58,300 @@ class _SupportScreenState extends State<SupportScreen> {
 
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
+                physics: const BouncingScrollPhysics(),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 child: Column(
                   children: [
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 16),
 
-                    // Icon with gradient circle
+                    // App icon
                     Container(
-                      width: 80,
-                      height: 80,
                       decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            AppTheme.accent,
-                            AppTheme.accent.withValues(alpha: 0.6),
-                          ],
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset(
+                          'assets/icons/icon_white.png',
+                          width: 72,
+                          height: 72,
+                          fit: BoxFit.cover,
                         ),
                       ),
-                      child: const Icon(
-                        Icons.headset_mic_outlined,
-                        size: 36,
-                        color: Colors.white,
-                      ),
                     ),
+                    const SizedBox(height: 32),
+
+                    // Website card
+                    _contactCard(
+                      icon: Icons.language_rounded,
+                      label: 'Website',
+                      subtitle: 'ozelgunleriunutma.com',
+                      cardBg: cardBg,
+                      iconBg: iconBg,
+                      textColor: textColor,
+                      secondaryColor: secondaryColor,
+                      isDark: isDark,
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        launchUrl(
+                            Uri.parse('https://ozelgunleriunutma.com'));
+                      },
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Email card
+                    _contactCard(
+                      icon: Icons.mail_outline_rounded,
+                      label: 'E-posta',
+                      subtitle: 'info@ozelgunleriunutma.com',
+                      cardBg: cardBg,
+                      iconBg: iconBg,
+                      textColor: textColor,
+                      secondaryColor: secondaryColor,
+                      isDark: isDark,
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        launchUrl(Uri.parse(
+                            'mailto:info@ozelgunleriunutma.com?subject=Destek%20Talebi'));
+                      },
+                    ),
+
                     const SizedBox(height: 24),
 
-                    Text(
-                      'Bir sorun mu yaşıyorsunuz?',
-                      style: GoogleFonts.poppins(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                        color: textColor,
+                    // FAQ section title
+                    Padding(
+                      padding: const EdgeInsets.only(left: 4),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'SIKÇA SORULAN SORULAR',
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: secondaryColor,
+                            letterSpacing: 1,
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 8),
-                    Text(
-                      'Size yardımcı olmaktan memnuniyet duyarız.\nAşağıdaki kanallardan bize ulaşabilirsiniz.',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: secondaryColor,
-                        height: 1.5,
+
+                    // FAQ grouped container
+                    Container(
+                      decoration: BoxDecoration(
+                        color: cardBg,
+                        borderRadius: BorderRadius.circular(16),
                       ),
-                    ),
-                    const SizedBox(height: 32),
-
-                    // Two cards side by side
-                    Row(
-                      children: [
-                        // Website card
-                        Expanded(
-                          child: GestureDetector(
-                            onTapDown: (_) =>
-                                setState(() => _webPressed = true),
-                            onTapUp: (_) =>
-                                setState(() => _webPressed = false),
-                            onTapCancel: () =>
-                                setState(() => _webPressed = false),
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              launchUrl(Uri.parse(
-                                  'https://ozelgunleriunutma.com'));
-                            },
-                            child: AnimatedScale(
-                              scale: _webPressed ? 0.95 : 1.0,
-                              duration: const Duration(milliseconds: 150),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 24, horizontal: 12),
-                                decoration: BoxDecoration(
-                                  color: cardBg,
-                                  borderRadius: BorderRadius.circular(20),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black
-                                          .withValues(alpha: 0.04),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Column(
-                                  children: [
-                                    Container(
-                                      width: 44,
-                                      height: 44,
-                                      decoration: BoxDecoration(
-                                        color: AppTheme.accent
-                                            .withValues(alpha: 0.1),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Icon(
-                                        Icons.language_rounded,
-                                        size: 22,
-                                        color: AppTheme.accent,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 12),
-                                    Text(
-                                      'Website',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600,
-                                        color: textColor,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'ozelgunleri\nunutma.com',
-                                      textAlign: TextAlign.center,
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 11,
-                                        color: secondaryColor,
-                                        height: 1.3,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
+                      child: Column(
+                        children: [
+                          _faqItem(
+                            0,
+                            'Etkinlik nasıl eklenir?',
+                            'Ana sayfadaki + butonuna tıklayın, etkinlik adını ve kategorisini seçin, ardından tarihi belirleyip kaydedin.',
+                            isDark,
+                            textColor,
+                            secondaryColor,
                           ),
-                        ),
-
-                        const SizedBox(width: 14),
-
-                        // Email card
-                        Expanded(
-                          child: GestureDetector(
-                            onTapDown: (_) =>
-                                setState(() => _mailPressed = true),
-                            onTapUp: (_) =>
-                                setState(() => _mailPressed = false),
-                            onTapCancel: () =>
-                                setState(() => _mailPressed = false),
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              launchUrl(Uri.parse(
-                                  'mailto:info@ozelgunleriunutma.com?subject=Destek%20Talebi'));
-                            },
-                            child: AnimatedScale(
-                              scale: _mailPressed ? 0.95 : 1.0,
-                              duration: const Duration(milliseconds: 150),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 24, horizontal: 12),
-                                decoration: BoxDecoration(
-                                  color: cardBg,
-                                  borderRadius: BorderRadius.circular(20),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black
-                                          .withValues(alpha: 0.04),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Column(
-                                  children: [
-                                    Container(
-                                      width: 44,
-                                      height: 44,
-                                      decoration: BoxDecoration(
-                                        color: AppTheme.accent
-                                            .withValues(alpha: 0.1),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Icon(
-                                        Icons.mail_outline_rounded,
-                                        size: 22,
-                                        color: AppTheme.accent,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 12),
-                                    Text(
-                                      'E-posta',
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600,
-                                        color: textColor,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'info@ozelgunleri\nunutma.com',
-                                      textAlign: TextAlign.center,
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 11,
-                                        color: secondaryColor,
-                                        height: 1.3,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
+                          _faqDivider(isDark),
+                          _faqItem(
+                            1,
+                            'Bildirimler nasıl çalışır?',
+                            'Tercihler\'den bildirim zamanını ayarlayabilirsiniz. Etkinlik günü ve öncesinde belirlediğiniz saatte hatırlatma alırsınız.',
+                            isDark,
+                            textColor,
+                            secondaryColor,
                           ),
-                        ),
-                      ],
+                          _faqDivider(isDark),
+                          _faqItem(
+                            2,
+                            'Verilerimi nasıl yedeklerim?',
+                            'Tercihler > Verileri Yedekle seçeneğiyle tüm etkinliklerinizi JSON dosyası olarak dışa aktarabilirsiniz.',
+                            isDark,
+                            textColor,
+                            secondaryColor,
+                          ),
+                          _faqDivider(isDark),
+                          _faqItem(
+                            3,
+                            'Kategori temasını nasıl değiştiririm?',
+                            'Tercihler > Kategori Temaları\'ndan istediğiniz kategoriye tıklayıp hazır görsellerden birini seçebilir veya galeriden kendi fotoğrafınızı yükleyebilirsiniz.',
+                            isDark,
+                            textColor,
+                            secondaryColor,
+                          ),
+                          _faqDivider(isDark),
+                          _faqItem(
+                            4,
+                            'Geçmiş etkinliklerimi görebilir miyim?',
+                            'Ana sayfadaki Geçmiş/Yaklaşan toggle\'ından Geçmiş\'e tıklayarak tamamlanmış etkinliklerinizi görüntüleyebilirsiniz.',
+                            isDark,
+                            textColor,
+                            secondaryColor,
+                          ),
+                        ],
+                      ),
                     ),
 
                     const SizedBox(height: 32),
-                    Text(
-                      'En kısa sürede size dönüş yapacağız',
-                      style: GoogleFonts.poppins(
-                        fontSize: 13,
-                        color: secondaryColor,
-                      ),
-                    ),
                   ],
                 ),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _contactCard({
+    required IconData icon,
+    required String label,
+    required String subtitle,
+    required Color cardBg,
+    required Color iconBg,
+    required Color textColor,
+    required Color secondaryColor,
+    required VoidCallback onTap,
+    required bool isDark,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        decoration: BoxDecoration(
+          color: cardBg,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFF1A1A1A),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, size: 20, color: Colors.white),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.3,
+                      color: textColor,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w400,
+                      color: secondaryColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded,
+                size: 20, color: secondaryColor),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _faqDivider(bool isDark) {
+    return Divider(
+      height: 0.5,
+      thickness: 0.5,
+      color: isDark ? const Color(0xFF2C2C2E) : const Color(0xFFE5E5EA),
+      indent: 20,
+      endIndent: 20,
+    );
+  }
+
+  Widget _faqItem(
+    int index,
+    String question,
+    String answer,
+    bool isDark,
+    Color textColor,
+    Color secondaryColor,
+  ) {
+    final isExpanded = _expandedFaq[index] ?? false;
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        HapticFeedback.selectionClick();
+        setState(() {
+          _expandedFaq[index] = !isExpanded;
+        });
+      },
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    question,
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -0.3,
+                      color: textColor,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                AnimatedRotation(
+                  turns: isExpanded ? 0.5 : 0.0,
+                  duration: const Duration(milliseconds: 200),
+                  child: Icon(
+                    Icons.expand_more_rounded,
+                    size: 22,
+                    color: secondaryColor,
+                  ),
+                ),
+              ],
+            ),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOut,
+              child: isExpanded
+                  ? Padding(
+                      padding: const EdgeInsets.only(top: 10),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          answer,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: secondaryColor,
+                            height: 1.6,
+                          ),
+                        ),
+                      ),
+                    )
+                  : const SizedBox.shrink(),
             ),
           ],
         ),

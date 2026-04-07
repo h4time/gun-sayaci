@@ -24,12 +24,12 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? Colors.black : Colors.white;
+    final bgColor = isDark ? Colors.black : const Color(0xFFF5F5F0);
     final textColor = isDark ? Colors.white : AppTheme.primaryText;
     final secondaryColor = isDark ? Colors.grey[400]! : AppTheme.secondaryText;
-    final fieldBg = isDark ? const Color(0xFF1C1C1E) : const Color(0xFFF5F5F0);
-    final fieldBorder =
-        isDark ? Colors.white.withValues(alpha: 0.08) : const Color(0xFFE5E5EA);
+    final fieldBg = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+    final btnColor = isDark ? Colors.white : const Color(0xFF1A1A1A);
+    final btnTextColor = isDark ? Colors.black : Colors.white;
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -71,60 +71,41 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
                   children: [
                     const SizedBox(height: 16),
 
-                    // Icon with gradient circle
+                    // App icon
                     Container(
-                      width: 80,
-                      height: 80,
                       decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            AppTheme.accent,
-                            AppTheme.accent.withValues(alpha: 0.6),
-                          ],
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.asset(
+                          'assets/icons/icon_white.png',
+                          width: 72,
+                          height: 72,
+                          fit: BoxFit.cover,
                         ),
                       ),
-                      child: const Icon(
-                        Icons.lightbulb_outline_rounded,
-                        size: 36,
-                        color: Colors.white,
-                      ),
                     ),
-                    const SizedBox(height: 24),
-
-                    Text(
-                      'Önerilerinizi duymak isteriz!',
-                      style: GoogleFonts.poppins(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w700,
-                        color: textColor,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Uygulamayı daha iyi hale getirmek için\nfikirlerinizi paylaşın.',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: secondaryColor,
-                        height: 1.5,
-                      ),
-                    ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 32),
 
                     // TextField
                     TextField(
                       controller: _controller,
                       style: GoogleFonts.poppins(
-                          fontSize: 14, color: textColor),
-                      maxLines: 6,
-                      minLines: 5,
+                          fontSize: 15, fontWeight: FontWeight.w500, color: textColor),
+                      maxLines: 8,
+                      minLines: 6,
                       decoration: InputDecoration(
                         hintText: 'Önerinizi buraya yazın...',
                         hintStyle: GoogleFonts.poppins(
-                            color: secondaryColor, fontSize: 14),
+                            color: secondaryColor, fontSize: 15, fontWeight: FontWeight.w400),
                         filled: true,
                         fillColor: fieldBg,
                         border: OutlineInputBorder(
@@ -133,18 +114,17 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
-                          borderSide:
-                              BorderSide(color: fieldBorder, width: 1),
+                          borderSide: BorderSide.none,
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
                           borderSide: const BorderSide(
                               color: AppTheme.accent, width: 1.5),
                         ),
-                        contentPadding: const EdgeInsets.all(18),
+                        contentPadding: const EdgeInsets.all(20),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
 
                     // Send button
                     GestureDetector(
@@ -168,36 +148,21 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
                           width: double.infinity,
                           height: 52,
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                              colors: [
-                                AppTheme.accent,
-                                AppTheme.accent.withValues(alpha: 0.8),
-                              ],
-                            ),
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppTheme.accent
-                                    .withValues(alpha: 0.3),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
+                            color: btnColor,
+                            borderRadius: BorderRadius.circular(14),
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.send_rounded,
-                                  size: 18, color: Colors.white),
+                              Icon(Icons.arrow_forward_rounded,
+                                  size: 18, color: btnTextColor),
                               const SizedBox(width: 8),
                               Text(
                                 'Gönder',
                                 style: GoogleFonts.poppins(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
-                                  color: Colors.white,
+                                  color: btnTextColor,
                                 ),
                               ),
                             ],
