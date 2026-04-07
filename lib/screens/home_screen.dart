@@ -110,9 +110,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: _buildHeader(isDark),
                     ),
 
-                    if (events.isEmpty)
+                    if (events.isEmpty && isPast)
                       SliverFillRemaining(
                         hasScrollBody: false,
+                        child: _buildEmptyState(isDark, isPast),
+                      )
+                    else if (events.isEmpty && !isPast)
+                      SliverToBoxAdapter(
                         child: _buildEmptyState(isDark, isPast),
                       )
                     else
@@ -650,9 +654,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           textColor: textColor,
                           secondaryColor: secondaryColor,
                           onTap: () {
-                            // Placeholder — gerçek store ID eklenecek
-                            launchUrl(Uri.parse(
-                                'https://apps.apple.com/app/id0000000000'));
+                            launchUrl(
+                              Uri.parse('https://apps.apple.com/app/6761291978?action=write-review'),
+                              mode: LaunchMode.externalApplication,
+                            );
                           },
                         ),
                         const SizedBox(height: 8),
@@ -970,71 +975,241 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // === EMPTY STATE ===
   Widget _buildEmptyState(bool isDark, bool isPast) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 100),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              isPast
-                  ? Icons.hourglass_empty_rounded
-                  : Icons.calendar_today_outlined,
-              size: 64,
-              color: isDark ? Colors.grey[700] : const Color(0xFFD1D1D6),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              isPast ? 'Geçmiş etkinlik yok' : 'Henüz etkinlik yok',
-              style: GoogleFonts.poppins(
-                fontSize: 18,
-                fontWeight: FontWeight.w500,
-                color: isDark ? Colors.grey[500] : AppTheme.secondaryText,
+    final textColor = isDark ? Colors.white : AppTheme.primaryText;
+    final secondaryColor =
+        isDark ? Colors.grey[500]! : AppTheme.secondaryText;
+
+    if (isPast) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 100),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.hourglass_empty_rounded,
+                size: 64,
+                color: isDark ? Colors.grey[700] : const Color(0xFFD1D1D6),
               ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              isPast
-                  ? 'Tamamlanan etkinlikler burada görünecek'
-                  : 'İlk geri sayımını başlat',
-              style: GoogleFonts.poppins(
-                fontSize: 14,
-                color: isDark
-                    ? Colors.grey[600]
-                    : const Color(0xFFAEAEB2),
+              const SizedBox(height: 16),
+              Text(
+                'Geçmiş etkinlik yok',
+                style: GoogleFonts.poppins(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: secondaryColor,
+                ),
               ),
-            ),
-            if (!isPast) ...[
-              const SizedBox(height: 24),
-              GestureDetector(
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  _showAddEventSheet();
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 24, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.1)
-                        : AppTheme.primaryText,
-                    borderRadius: BorderRadius.circular(24),
+              const SizedBox(height: 6),
+              Text(
+                'Tamamlanan etkinlikler burada görünecek',
+                style: GoogleFonts.poppins(
+                  fontSize: 14,
+                  color: isDark ? Colors.grey[600] : const Color(0xFFAEAEB2),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ).animate().fadeIn(duration: 300.ms);
+    }
+
+    return Column(
+      children: [
+        const SizedBox(height: 24),
+
+        // Staggered sample cards
+        ClipRect(
+          child: Column(
+            children: [
+              // Row 1 — shifted left
+              Transform.translate(
+                offset: const Offset(-20, 0),
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width + 40,
+                  height: 220,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: _sampleCard('assets/images/birthday.jpg',
+                            '28 GÜN SONRA', 'Doğum Günü', 200,
+                            showText: false),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        flex: 2,
+                        child: _sampleCard('assets/images/travel.jpg',
+                            '3 GÜN SONRA', 'Tatil', 160),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        flex: 3,
+                        child: _sampleCard('assets/images/seyahat.jpg',
+                            '16 HAFTA SONRA', 'Seyahat', 220),
+                      ),
+                    ],
                   ),
-                  child: Text(
-                    'Ekle',
-                    style: GoogleFonts.poppins(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              // Row 2 — shifted right
+              Transform.translate(
+                offset: const Offset(20, 0),
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width + 40,
+                  height: 180,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        flex: 3,
+                        child: _sampleCard(
+                            'assets/images/celebration.jpg',
+                            'YARIN',
+                            'Yıldönümü',
+                            180),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        flex: 2,
+                        child: _sampleCard('assets/images/spor.jpg',
+                            '3 SAAT SONRA', 'Antrenman', 160,
+                            showText: false),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        flex: 3,
+                        child: _sampleCard('assets/images/concert.jpg',
+                            '1 AY SONRA', 'Konser', 180),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ],
+          ),
+        ),
+
+        const SizedBox(height: 36),
+
+        Text(
+          'Özel günlerini ekle',
+          style: TextStyle(
+            fontFamily: '.SF Pro Display',
+            fontSize: 24,
+            fontWeight: FontWeight.w600,
+            color: textColor,
+          ),
+          textAlign: TextAlign.center,
+        ),
+
+        const SizedBox(height: 8),
+
+        Text(
+          'Önemli anlarını takip etmeye başla',
+          style: TextStyle(
+            fontFamily: '.SF Pro Text',
+            fontSize: 15,
+            fontWeight: FontWeight.w400,
+            color: textColor,
+          ),
+          textAlign: TextAlign.center,
+        ),
+
+        const SizedBox(height: 24),
+
+        GestureDetector(
+          onTap: () {
+            HapticFeedback.mediumImpact();
+            _showAddEventSheet();
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(
+                horizontal: 36, vertical: 16),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+              borderRadius: BorderRadius.circular(28),
+            ),
+            child: Text(
+              'Özel Gün Ekle',
+              style: TextStyle(
+                fontFamily: '.SF Pro Text',
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: isDark ? Colors.black : Colors.white,
+              ),
+            ),
+          ),
+        ),
+
+        const SizedBox(height: 40),
+      ],
+    ).animate().fadeIn(duration: 300.ms);
+  }
+
+  Widget _sampleCard(
+      String image, String countdown, String title, double height,
+      {bool showText = true}) {
+    return SizedBox(
+      height: height,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.asset(image, fit: BoxFit.cover, cacheWidth: 400),
+            if (showText)
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                height: height * 0.6,
+                child: Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Color(0x00000000), Color(0xAA000000)],
+                    ),
+                  ),
+                ),
+              ),
+            if (showText) Positioned(
+              bottom: 12,
+              left: 10,
+              right: 10,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    countdown,
+                    style: GoogleFonts.poppins(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  Text(
+                    title,
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                      height: 1.1,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
-    ).animate().fadeIn(duration: 300.ms);
+    );
   }
 
   // === NAVIGATION ===

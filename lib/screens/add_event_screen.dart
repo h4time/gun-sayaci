@@ -372,22 +372,6 @@ class _WizardStep1State extends State<_WizardStep1> {
 
                     const SizedBox(height: 24),
 
-                    // Label
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        'Kategori',
-                        style: GoogleFonts.poppins(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w400,
-                          color: isDark
-                              ? Colors.grey[300]
-                              : AppTheme.primaryText,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-
                     // Category grid — 2 columns (pastel cards)
                     GridView.count(
                       crossAxisCount: 2,
@@ -463,8 +447,9 @@ class _WizardStep1State extends State<_WizardStep1> {
                                         const SizedBox(height: 4),
                                         Text(
                                           displayName,
-                                          style:
-                                              GoogleFonts.poppins(
+                                          style: TextStyle(
+                                            fontFamily:
+                                                '.SF Pro Text',
                                             fontSize: 13,
                                             fontWeight:
                                                 FontWeight.w500,
@@ -551,6 +536,11 @@ class _WizardStep2State extends State<_WizardStep2> {
   final _storageService = StorageService();
   bool _slideForward = true;
   int _slideKey = 0;
+  bool _reminderEventDay = true;
+  bool _reminder1Day = false;
+  bool _reminder3Days = false;
+  bool _reminder1Week = false;
+  bool _reminder1Month = false;
 
   static const _months = [
     'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
@@ -572,6 +562,18 @@ class _WizardStep2State extends State<_WizardStep2> {
   }
 
   DateTime get _date => _selectedDate;
+
+  String get _reminderLabel {
+    List<String> active = [];
+    if (_reminderEventDay) active.add('Etkinlik günü');
+    if (_reminder1Day) active.add('1 gün önce');
+    if (_reminder3Days) active.add('3 gün önce');
+    if (_reminder1Week) active.add('1 hafta önce');
+    if (_reminder1Month) active.add('1 ay önce');
+    if (active.isEmpty) return 'Kapalı';
+    if (active.length == 1) return active.first;
+    return '${active.length} hatırlatma';
+  }
 
   int _daysInMonth(int m, int y) => DateTime(y, m + 1, 0).day;
 
@@ -785,18 +787,7 @@ class _WizardStep2State extends State<_WizardStep2> {
                       ),
                     ),
 
-                    const SizedBox(height: 10),
-
-                    // Selected date summary
-                    Text(
-                      '${_selectedDate.day} ${_months[_selectedDate.month - 1]} ${_selectedDate.year}, ${_dayNames[_selectedDate.weekday - 1]}',
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        color: secondaryColor,
-                      ),
-                    ),
-
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 14),
 
                     // === Repeat Card ===
                     Container(
@@ -825,6 +816,7 @@ class _WizardStep2State extends State<_WizardStep2> {
                                         style:
                                             GoogleFonts.poppins(
                                           fontSize: 16,
+                                          fontWeight: FontWeight.w500,
                                           color: textColor,
                                         ),
                                       ),
@@ -849,6 +841,56 @@ class _WizardStep2State extends State<_WizardStep2> {
                             ),
                           ),
                         ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    // === Reminder Card ===
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: cardBg,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: borderColor, width: 1),
+                      ),
+                      child: GestureDetector(
+                        onTap: () => _showReminderSheet(
+                            isDark, textColor, secondaryColor),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24),
+                          child: SizedBox(
+                            height: 52,
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    'Hatırlatma',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                      color: textColor,
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  _reminderLabel,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    color: secondaryColor,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Icon(
+                                  Icons.chevron_right_rounded,
+                                  size: 20,
+                                  color: secondaryColor,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ),
                     ),
 
@@ -1038,6 +1080,112 @@ class _WizardStep2State extends State<_WizardStep2> {
     );
   }
 
+  void _showReminderSheet(
+      bool isDark, Color textColor, Color secondaryColor) {
+    HapticFeedback.selectionClick();
+    final bgColor = isDark ? const Color(0xFF1C1C1E) : Colors.white;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setSheetState) {
+            return Container(
+              decoration: BoxDecoration(
+                color: bgColor,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Center(
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(vertical: 12),
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[400],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(24, 4, 24, 16),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        'Hatırlatma',
+                        style: GoogleFonts.poppins(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: textColor,
+                        ),
+                      ),
+                    ),
+                  ),
+                  _reminderTile('Etkinlik günü', _reminderEventDay, (v) {
+                    HapticFeedback.selectionClick();
+                    setSheetState(() => _reminderEventDay = v);
+                    setState(() {});
+                  }, isDark, textColor),
+                  _reminderTile('1 gün önce', _reminder1Day, (v) {
+                    HapticFeedback.selectionClick();
+                    setSheetState(() => _reminder1Day = v);
+                    setState(() {});
+                  }, isDark, textColor),
+                  _reminderTile('3 gün önce', _reminder3Days, (v) {
+                    HapticFeedback.selectionClick();
+                    setSheetState(() => _reminder3Days = v);
+                    setState(() {});
+                  }, isDark, textColor),
+                  _reminderTile('1 hafta önce', _reminder1Week, (v) {
+                    HapticFeedback.selectionClick();
+                    setSheetState(() => _reminder1Week = v);
+                    setState(() {});
+                  }, isDark, textColor),
+                  _reminderTile('1 ay önce', _reminder1Month, (v) {
+                    HapticFeedback.selectionClick();
+                    setSheetState(() => _reminder1Month = v);
+                    setState(() {});
+                  }, isDark, textColor),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _reminderTile(String label, bool value,
+      ValueChanged<bool> onChanged, bool isDark, Color textColor) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 2),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: GoogleFonts.poppins(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: textColor,
+              ),
+            ),
+          ),
+          CupertinoSwitch(
+            value: value,
+            onChanged: onChanged,
+            activeTrackColor: AppTheme.accent,
+          ),
+        ],
+      ),
+    );
+  }
+
   void _save() {
     final event = EventModel(
       id: const Uuid().v4(),
@@ -1045,7 +1193,11 @@ class _WizardStep2State extends State<_WizardStep2> {
       targetDate: _date,
       category: widget.category,
       notificationEnabled: true,
-      reminderEventDay: true,
+      reminderEventDay: _reminderEventDay,
+      reminder1Day: _reminder1Day,
+      reminder3Days: _reminder3Days,
+      reminder1Week: _reminder1Week,
+      reminder1Month: _reminder1Month,
     );
     _storageService.addEvent(event);
     NotificationService().scheduleEventNotification(event);
