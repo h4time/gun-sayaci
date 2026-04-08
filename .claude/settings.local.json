@@ -5,7 +5,8 @@
       "Bash(flutter pub:*)",
       "Bash(flutter run:*)",
       "Bash(flutter analyze:*)",
-      "Bash(adb -s emulator-5554 shell \"dumpsys activity activities | grep -i countdown\")"
+      "Bash(adb -s emulator-5554 shell \"dumpsys activity activities | grep -i countdown\")",
+      "Bash(claude auth:*)"
     ]
   }
 }
