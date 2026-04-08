@@ -14,33 +14,59 @@ class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
-  // Phase 1: Title (0-1000ms)
+  // Title + quote
   late Animation<double> _titleFade;
   late Animation<double> _titleSlide;
-
-  // Phase 2: Quote (400-1400ms)
   late Animation<double> _quoteFade;
   late Animation<double> _quoteSlide;
 
-  // Phase 3: Cards fade from transparent — staggered diagonal pairs
-  // Pair A (cards 0,5): 800-2200ms  — first diagonal
-  // Pair B (cards 1,3): 1200-2600ms — second diagonal
-  // Pair C (cards 2,4): 1600-3000ms — third diagonal (latest)
+  // Cards — diagonal pairs, slow fade
   late List<Animation<double>> _cardFades;
 
-  // Phase 4: Screen fade out (4000-5000ms)
+  // Card overlay text — fades in slightly after card image
+  late List<Animation<double>> _cardTextFades;
+
+  // Screen fade out
   late Animation<double> _screenFade;
 
+  // Card data: image, line1, line2
   static const _cards = [
     // Row 1
-    ('assets/images/birthday.jpg', '28 GÜN SONRA', 'Doğum Günü', 200.0, false),
-    ('assets/images/travel.jpg', '3 GÜN SONRA', 'Tatil', 160.0, true),
-    ('assets/images/seyahat.jpg', '16 HAFTA SONRA', 'Seyahat', 220.0, true),
+    (
+      'assets/images/birthday.jpg',
+      'Kankamın\nDoğum Günü',
+      '12 gün kaldı',
+    ),
+    (
+      'assets/images/travel.jpg',
+      'Antalya\nTatili',
+      '3 gün sonra',
+    ),
+    (
+      'assets/images/seyahat.jpg',
+      'Paris\nSeyahati',
+      '16 hafta sonra',
+    ),
     // Row 2
-    ('assets/images/celebration.jpg', 'YARIN', 'Yıldönümü', 180.0, true),
-    ('assets/images/spor.jpg', '3 SAAT SONRA', 'Antrenman', 160.0, false),
-    ('assets/images/concert.jpg', '1 AY SONRA', 'Konser', 180.0, true),
+    (
+      'assets/images/celebration.jpg',
+      'Sevdiceğim\nDoğmuş',
+      '17 Nisan',
+    ),
+    (
+      'assets/images/spor.jpg',
+      'Maraton\nGünü',
+      '2 ay kaldı',
+    ),
+    (
+      'assets/images/concert.jpg',
+      'Konser\nGecesi',
+      '1 ay sonra',
+    ),
   ];
+
+  // Heights per card
+  static const _heights = [200.0, 160.0, 220.0, 180.0, 160.0, 180.0];
 
   @override
   void initState() {
@@ -48,50 +74,51 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 5000),
+      duration: const Duration(milliseconds: 6500),
     );
 
-    // --- PHASE 1: Title first (0-1000ms) ---
+    // --- Title: 0 - 1200ms (0.0 - 0.185) ---
     _titleFade = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.0, 0.20, curve: Curves.easeOut),
+        curve: const Interval(0.0, 0.185, curve: Curves.easeOut),
       ),
     );
-    _titleSlide = Tween<double>(begin: 20.0, end: 0.0).animate(
+    _titleSlide = Tween<double>(begin: 18.0, end: 0.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.0, 0.22, curve: Curves.easeOutCubic),
+        curve: const Interval(0.0, 0.20, curve: Curves.easeOutCubic),
       ),
     );
 
-    // --- PHASE 2: Quote (400-1400ms) ---
+    // --- Quote: 500 - 1700ms (0.077 - 0.262) ---
     _quoteFade = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.08, 0.28, curve: Curves.easeOut),
+        curve: const Interval(0.077, 0.262, curve: Curves.easeOut),
       ),
     );
-    _quoteSlide = Tween<double>(begin: 14.0, end: 0.0).animate(
+    _quoteSlide = Tween<double>(begin: 12.0, end: 0.0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.08, 0.30, curve: Curves.easeOutCubic),
+        curve: const Interval(0.077, 0.28, curve: Curves.easeOutCubic),
       ),
     );
 
-    // --- PHASE 3: Cards — slow fade from transparent ---
-    // Pair A: cards 0,5 (top-left + bottom-right diagonal)
-    // Pair B: cards 1,3 (top-center + bottom-left)
-    // Pair C: cards 2,4 (top-right + bottom-center) — latest
-    final cardPairIndex = [0, 1, 2, 1, 2, 0]; // which pair each card belongs to
+    // --- Cards: diagonal pairs, very slow fade ---
+    // Pair A (cards 0,5): 1000 - 3200ms (0.154 - 0.492)
+    // Pair B (cards 1,3): 1500 - 3700ms (0.231 - 0.569)
+    // Pair C (cards 2,4): 2000 - 4200ms (0.308 - 0.646)
+    final cardPairIndex = [0, 1, 2, 1, 2, 0];
+    final pairStarts = [0.154, 0.231, 0.308];
+    final pairEnds = [0.492, 0.569, 0.646];
 
-    // Pair A: 0.16-0.52 (800ms-2600ms)  = 1800ms fade duration
-    // Pair B: 0.24-0.58 (1200ms-2900ms) = 1700ms fade duration
-    // Pair C: 0.32-0.64 (1600ms-3200ms) = 1600ms fade duration
-    final pairStarts = [0.16, 0.24, 0.32];
-    final pairEnds = [0.52, 0.58, 0.64];
+    // Card text fades in a bit after the image starts
+    // offset ~400ms after card start
+    final textOffset = 0.062; // ~400ms in 6500ms
 
     _cardFades = [];
+    _cardTextFades = [];
     for (int i = 0; i < 6; i++) {
       final pair = cardPairIndex[i];
       _cardFades.add(
@@ -103,9 +130,19 @@ class _SplashScreenState extends State<SplashScreen>
           ),
         ),
       );
+      _cardTextFades.add(
+        Tween<double>(begin: 0.0, end: 1.0).animate(
+          CurvedAnimation(
+            parent: _controller,
+            curve: Interval(
+                pairStarts[pair] + textOffset, pairEnds[pair],
+                curve: Curves.easeOut),
+          ),
+        ),
+      );
     }
 
-    // --- PHASE 4: Screen fade out (4000-5000ms) ---
+    // --- Screen fade out: 5200 - 6500ms (0.80 - 1.0) ---
     _screenFade = Tween<double>(begin: 1.0, end: 0.0).animate(
       CurvedAnimation(
         parent: _controller,
@@ -157,11 +194,11 @@ class _SplashScreenState extends State<SplashScreen>
             children: [
               const SizedBox(height: 48),
 
-              // Card grid — fades in AFTER text
+              // Card grid
               ClipRect(
                 child: Column(
                   children: [
-                    // Row 1 — shifted left
+                    // Row 1
                     Transform.translate(
                       offset: const Offset(-20, 0),
                       child: SizedBox(
@@ -170,26 +207,17 @@ class _SplashScreenState extends State<SplashScreen>
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
-                            Expanded(
-                              flex: 3,
-                              child: _animatedCard(0, 200),
-                            ),
+                            Expanded(flex: 3, child: _animatedCard(0)),
                             const SizedBox(width: 10),
-                            Expanded(
-                              flex: 2,
-                              child: _animatedCard(1, 160),
-                            ),
+                            Expanded(flex: 2, child: _animatedCard(1)),
                             const SizedBox(width: 10),
-                            Expanded(
-                              flex: 3,
-                              child: _animatedCard(2, 220),
-                            ),
+                            Expanded(flex: 3, child: _animatedCard(2)),
                           ],
                         ),
                       ),
                     ),
                     const SizedBox(height: 10),
-                    // Row 2 — shifted right
+                    // Row 2
                     Transform.translate(
                       offset: const Offset(20, 0),
                       child: SizedBox(
@@ -198,20 +226,11 @@ class _SplashScreenState extends State<SplashScreen>
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
-                              flex: 3,
-                              child: _animatedCard(3, 180),
-                            ),
+                            Expanded(flex: 3, child: _animatedCard(3)),
                             const SizedBox(width: 10),
-                            Expanded(
-                              flex: 2,
-                              child: _animatedCard(4, 160),
-                            ),
+                            Expanded(flex: 2, child: _animatedCard(4)),
                             const SizedBox(width: 10),
-                            Expanded(
-                              flex: 3,
-                              child: _animatedCard(5, 180),
-                            ),
+                            Expanded(flex: 3, child: _animatedCard(5)),
                           ],
                         ),
                       ),
@@ -222,7 +241,7 @@ class _SplashScreenState extends State<SplashScreen>
 
               const Spacer(),
 
-              // Title: "Gün Sayacı" — appears FIRST
+              // Title
               Transform.translate(
                 offset: Offset(0, _titleSlide.value),
                 child: Opacity(
@@ -242,18 +261,18 @@ class _SplashScreenState extends State<SplashScreen>
 
               const SizedBox(height: 12),
 
-              // Quote — appears right after title
+              // Quote
               Transform.translate(
                 offset: Offset(0, _quoteSlide.value),
                 child: Opacity(
                   opacity: _quoteFade.value,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 48),
+                    padding: const EdgeInsets.symmetric(horizontal: 40),
                     child: Text(
                       '"Her özel gün, hatırlanmayı hak eder."',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.caveat(
-                        fontSize: 20,
+                        fontSize: 22,
                         fontWeight: FontWeight.w500,
                         fontStyle: FontStyle.italic,
                         color: isDark
@@ -274,89 +293,96 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 
-  Widget _animatedCard(int index, double height) {
+  Widget _animatedCard(int index) {
     final card = _cards[index];
     final image = card.$1;
-    final countdown = card.$2;
-    final title = card.$3;
-    final showText = card.$5;
-    final opacity = _cardFades[index].value;
+    final line1 = card.$2;
+    final line2 = card.$3;
+    final height = _heights[index];
+    final imgOpacity = _cardFades[index].value;
+    final txtOpacity = _cardTextFades[index].value;
 
-    // Subtle zoom settle: starts at 1.03, settles to 1.0
-    final scale = 1.0 + (1.0 - opacity) * 0.03;
+    // Subtle zoom settle
+    final scale = 1.0 + (1.0 - imgOpacity) * 0.03;
 
     return Opacity(
-      opacity: opacity,
+      opacity: imgOpacity,
       child: Transform.scale(
         scale: scale,
-        child: _sampleCard(image, countdown, title, height,
-            showText: showText, textOpacity: opacity),
-      ),
-    );
-  }
+        child: SizedBox(
+          height: height,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                // Image
+                Image.asset(image, fit: BoxFit.cover, cacheWidth: 400),
 
-  Widget _sampleCard(
-      String image, String countdown, String title, double height,
-      {bool showText = true, double textOpacity = 1.0}) {
-    return SizedBox(
-      height: height,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Image.asset(image, fit: BoxFit.cover, cacheWidth: 400),
-            if (showText)
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                height: height * 0.6,
-                child: Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [Color(0x00000000), Color(0xAA000000)],
+                // Gradient overlay
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: height * 0.7,
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Color(0x00000000), Color(0xBB000000)],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            if (showText)
-              Positioned(
-                bottom: 12,
-                left: 10,
-                right: 10,
-                child: Opacity(
-                  opacity: textOpacity.clamp(0.0, 1.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        countdown,
-                        style: GoogleFonts.poppins(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                          letterSpacing: 0.5,
+
+                // Text on card — fades in after image
+                Positioned(
+                  bottom: 14,
+                  left: 12,
+                  right: 12,
+                  child: Opacity(
+                    opacity: txtOpacity.clamp(0.0, 1.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Countdown / date label
+                        Text(
+                          line2.toUpperCase(),
+                          style: GoogleFonts.poppins(
+                            fontSize: 8,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white.withValues(alpha: 0.7),
+                            letterSpacing: 0.8,
+                          ),
                         ),
-                      ),
-                      Text(
-                        title,
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                          height: 1.1,
+                        const SizedBox(height: 2),
+                        // Title
+                        Text(
+                          line1,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            height: 1.15,
+                            shadows: const [
+                              Shadow(
+                                blurRadius: 8,
+                                color: Color(0x66000000),
+                                offset: Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-          ],
+              ],
+            ),
+          ),
         ),
       ),
     );
