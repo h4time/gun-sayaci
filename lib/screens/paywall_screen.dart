@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../services/pro_service.dart';
 
 class PaywallScreen extends StatefulWidget {
   const PaywallScreen({super.key});
@@ -13,6 +14,7 @@ class PaywallScreen extends StatefulWidget {
 class _PaywallScreenState extends State<PaywallScreen> {
   final _pageController = PageController();
   int _currentPage = 0;
+  bool _isLoading = false;
 
   static const _features = [
     (
@@ -37,6 +39,74 @@ class _PaywallScreenState extends State<PaywallScreen> {
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handlePurchase() async {
+    setState(() => _isLoading = true);
+    try {
+      final success = await ProService().purchase();
+      if (!mounted) return;
+      if (success) Navigator.pop(context);
+    } on PlatformException catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Satın alma başarısız oldu. Lütfen tekrar deneyin.',
+            style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
+          ),
+          backgroundColor: const Color(0xE61C1C1E),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14)),
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _handleRestore() async {
+    setState(() => _isLoading = true);
+    try {
+      final restored = await ProService().restore();
+      if (!mounted) return;
+      if (restored) {
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Geri yüklenecek satın alma bulunamadı.',
+              style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
+            ),
+            backgroundColor: const Color(0xE61C1C1E),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14)),
+            margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+          ),
+        );
+      }
+    } on PlatformException catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Geri yükleme başarısız oldu. Lütfen tekrar deneyin.',
+            style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
+          ),
+          backgroundColor: const Color(0xE61C1C1E),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14)),
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -233,26 +303,34 @@ class _PaywallScreenState extends State<PaywallScreen> {
                     const SizedBox(height: 20),
                     // Buy button
                     GestureDetector(
-                      onTap: () {
-                        HapticFeedback.mediumImpact();
-                        debugPrint('Satın alma başlatılacak');
-                      },
+                      onTap: _isLoading ? null : _handlePurchase,
                       child: Container(
                         width: double.infinity,
                         height: 54,
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: _isLoading
+                              ? Colors.white.withValues(alpha: 0.5)
+                              : Colors.white,
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Center(
-                          child: Text(
-                            'Satın Al',
-                            style: GoogleFonts.poppins(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.black,
-                            ),
-                          ),
+                          child: _isLoading
+                              ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.5,
+                                    color: Colors.black,
+                                  ),
+                                )
+                              : Text(
+                                  'Satın Al',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black,
+                                  ),
+                                ),
                         ),
                       ),
                     ),
@@ -264,9 +342,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
 
               // Restore purchases
               GestureDetector(
-                onTap: () {
-                  debugPrint('Restore purchases - RevenueCat bağlanacak');
-                },
+                onTap: _isLoading ? null : _handleRestore,
                 child: Text(
                   'Satın almaları geri yükle',
                   style: GoogleFonts.poppins(

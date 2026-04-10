@@ -1,23 +1,64 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 
 class ProService extends ChangeNotifier {
   static final ProService _instance = ProService._internal();
   factory ProService() => _instance;
   ProService._internal();
 
-  // DEBUG: Test için true/false yap, yayınlamadan önce false bırak
-  bool _isPro = false;
+  static const _entitlementId = 'Gün Sayacı Pro';
 
+  bool _isPro = false;
   bool get isPro => _isPro;
 
-  /// Şimdilik manuel toggle — sonra RevenueCat bağlanacak
-  void setPro(bool value) {
-    _isPro = value;
-    notifyListeners();
+  Future<void> init() async {
+    try {
+      final customerInfo = await Purchases.getCustomerInfo();
+      _checkPro(customerInfo);
+    } catch (e) {
+      debugPrint('ProService init error: $e');
+    }
+
+    Purchases.addCustomerInfoUpdateListener((info) {
+      _checkPro(info);
+      notifyListeners();
+    });
   }
 
-  /// Pro özellik kontrolü
-  bool canAccess(String feature) {
-    return _isPro;
+  void _checkPro(CustomerInfo info) {
+    final entitlement = info.entitlements.all[_entitlementId];
+    _isPro = entitlement?.isActive == true;
+  }
+
+  Future<bool> purchase() async {
+    try {
+      final offerings = await Purchases.getOfferings();
+      final current = offerings.current;
+      if (current == null) throw Exception('No offerings available');
+
+      final package =
+          current.lifetime ?? current.availablePackages.first;
+      await Purchases.purchase(PurchaseParams.package(package));
+      return true;
+    } on PlatformException catch (e) {
+      final errorCode = PurchasesErrorHelper.getErrorCode(e);
+      if (errorCode == PurchasesErrorCode.purchaseCancelledError) {
+        return false;
+      }
+      rethrow;
+    }
+  }
+
+  Future<bool> restore() async {
+    try {
+      final info = await Purchases.restorePurchases();
+      _checkPro(info);
+      notifyListeners();
+      return _isPro;
+    } on PlatformException catch (e) {
+      debugPrint('Restore error: $e');
+      rethrow;
+    }
   }
 }

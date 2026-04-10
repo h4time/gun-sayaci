@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import 'services/storage_service.dart';
 import 'services/notification_service.dart';
+import 'services/pro_service.dart';
 import 'providers/theme_provider.dart';
 import 'theme/app_theme.dart';
 import 'screens/splash_screen.dart';
@@ -17,6 +19,11 @@ void main() async {
   final notificationService = NotificationService();
   await notificationService.init();
   await notificationService.requestPermissions();
+
+  await Purchases.configure(
+    PurchasesConfiguration('appl_WYNWOVVClOVbLPqXibtMZhVjnPF'),
+  );
+  await ProService().init();
 
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
@@ -32,8 +39,11 @@ class GunSayaciApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => ThemeProvider(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider.value(value: ProService()),
+      ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, _) {
           return MaterialApp(

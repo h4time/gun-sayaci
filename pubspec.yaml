@@ -1,7 +1,7 @@
 name: gun_sayaci
 description: "Özel günlerinize geri sayım yapın. Doğum günü, bayram, yıldönümü ve daha fazlası."
 publish_to: 'none'
-version: 2.0.0+25
+version: 2.0.0+26
 
 environment:
   sdk: ^3.11.0
@@ -26,10 +26,11 @@ dependencies:
   share_plus: ^10.1.4
   url_launcher: ^6.3.1
   percent_indicator: ^4.2.5
-  package_info_plus: ^9.0.1
+  package_info_plus: ^9.0.1S
   file_picker: ^11.0.1
   path_provider: ^2.1.5
   image_picker: ^1.1.2
+  purchases_flutter: ^9.16.1
 
 dev_dependencies:
   flutter_test:
