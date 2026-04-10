@@ -1,7 +1,7 @@
 name: gun_sayaci
 description: "Özel günlerinize geri sayım yapın. Doğum günü, bayram, yıldönümü ve daha fazlası."
 publish_to: 'none'
-version: 2.0.0+26
+version: 2.0.0+27
 
 environment:
   sdk: ^3.11.0

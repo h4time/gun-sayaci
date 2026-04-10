@@ -21,7 +21,7 @@ void main() async {
   await notificationService.requestPermissions();
 
   await Purchases.configure(
-    PurchasesConfiguration('appl_WYNWOVVClOVbLPqXibtMZhVjnPF'),
+    PurchasesConfiguration('appl_TnAGRUaSZHEzHIkxAaGBNsRPsDK'),
   );
   await ProService().init();
 
