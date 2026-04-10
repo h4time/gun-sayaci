@@ -19,6 +19,8 @@ import '../theme/app_theme.dart';
 import 'event_size_screen.dart';
 import 'app_icon_screen.dart';
 import 'category_themes_screen.dart';
+import 'paywall_screen.dart';
+import '../services/pro_service.dart';
 
 class PreferencesScreen extends StatefulWidget {
   const PreferencesScreen({super.key});
@@ -619,6 +621,78 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 16),
                     children: [
+                      // Pro banner
+                      if (!ProService().isPro)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 20),
+                          child: GestureDetector(
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              _openPaywall();
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Color(0xFF1A1A1A),
+                                    Color(0xFF2C2C2E),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Gün Sayacı Pro\'ya Geç',
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.w700,
+                                            color: Colors.white,
+                                            letterSpacing: -0.3,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'Tüm özelliklerin kilidini aç',
+                                          style: GoogleFonts.poppins(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w400,
+                                            color: const Color(0xFF8E8E93),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Container(
+                                    width: 48,
+                                    height: 48,
+                                    decoration: BoxDecoration(
+                                      color: Colors.white
+                                          .withValues(alpha: 0.1),
+                                      borderRadius:
+                                          BorderRadius.circular(14),
+                                    ),
+                                    child: const Icon(
+                                      Icons.workspace_premium_rounded,
+                                      size: 26,
+                                      color: Colors.white70,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+
                       _sectionTitle('GÖRÜNÜM', secondaryColor),
                       const SizedBox(height: 8),
 
@@ -660,10 +734,19 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                       _settingsCard(
                         icon: Icons.aspect_ratio_rounded,
                         label: 'Etkinlik Boyutu',
-                        trailing: Text(
-                          _sizeLabelTr,
-                          style: GoogleFonts.poppins(
-                              fontSize: 14, color: secondaryColor),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (_cardSize != 'large' && !ProService().isPro)
+                              _proBadge(),
+                            if (_cardSize != 'large' && !ProService().isPro)
+                              const SizedBox(width: 8),
+                            Text(
+                              _sizeLabelTr,
+                              style: GoogleFonts.poppins(
+                                  fontSize: 14, color: secondaryColor),
+                            ),
+                          ],
                         ),
                         cardBg: cardBg,
                         textColor: textColor,
@@ -734,16 +817,28 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                       _settingsCard(
                         icon: Icons.palette_outlined,
                         label: 'Kategori Temaları',
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (!ProService().isPro) _proBadge(),
+                            if (!ProService().isPro) const SizedBox(width: 8),
+                            Icon(Icons.chevron_right_rounded,
+                                size: 22, color: secondaryColor),
+                          ],
+                        ),
                         cardBg: cardBg,
                         textColor: textColor,
                         secondaryColor: secondaryColor,
                         onTap: () async {
+                          if (!ProService().isPro) {
+                            _openPaywall();
+                            return;
+                          }
                           await Navigator.push(
                             context,
                             MaterialPageRoute(
                                 builder: (_) => const CategoryThemesScreen()),
                           );
-                          // Tema değişmiş olabilir, cache'i yenile
                           await AppTheme.loadCategoryThemes();
                           if (mounted) setState(() {});
                         },
@@ -776,19 +871,49 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                       _settingsCard(
                         icon: Icons.cloud_upload_outlined,
                         label: 'Verileri Yedekle',
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (!ProService().isPro) _proBadge(),
+                            if (!ProService().isPro) const SizedBox(width: 8),
+                            Icon(Icons.chevron_right_rounded,
+                                size: 22, color: secondaryColor),
+                          ],
+                        ),
                         cardBg: cardBg,
                         textColor: textColor,
                         secondaryColor: secondaryColor,
-                        onTap: _backupData,
+                        onTap: () {
+                          if (!ProService().isPro) {
+                            _openPaywall();
+                            return;
+                          }
+                          _backupData();
+                        },
                       ),
                       const SizedBox(height: 8),
                       _settingsCard(
                         icon: Icons.cloud_download_outlined,
                         label: 'Verileri Geri Yükle',
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (!ProService().isPro) _proBadge(),
+                            if (!ProService().isPro) const SizedBox(width: 8),
+                            Icon(Icons.chevron_right_rounded,
+                                size: 22, color: secondaryColor),
+                          ],
+                        ),
                         cardBg: cardBg,
                         textColor: textColor,
                         secondaryColor: secondaryColor,
-                        onTap: _restoreData,
+                        onTap: () {
+                          if (!ProService().isPro) {
+                            _openPaywall();
+                            return;
+                          }
+                          _restoreData();
+                        },
                       ),
                       const SizedBox(height: 8),
 
@@ -857,6 +982,32 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
           letterSpacing: 1,
         ),
       ),
+    );
+  }
+
+  Widget _proBadge() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        'PRO',
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: Colors.grey[500],
+          letterSpacing: 0.5,
+        ),
+      ),
+    );
+  }
+
+  void _openPaywall() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const PaywallScreen()),
     );
   }
 

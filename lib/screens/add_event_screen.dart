@@ -33,14 +33,14 @@ const Map<String, String> kCategoryEmojis = {
 
 // Pastel backgrounds & text colors for wizard category cards
 const Map<String, Color> kCatBgLight = {
-  'Doğum Günü': Color(0xFFFCEBEB),
-  'Tatil': Color(0xFFE6F1FB),
-  'Düğün/Yıldönümü': Color(0xFFFBEAF0),
-  'Sınav/İş': Color(0xFFFAEEDA),
-  'Seyahat': Color(0xFFE1F5EE),
-  'Konser/Etkinlik': Color(0xFFEEEDFE),
-  'Spor/Hedef': Color(0xFFEAF3DE),
-  '+ Özel': Color(0xFFF1EFE8),
+  'Doğum Günü': Color(0xFFFFF0F0),
+  'Tatil': Color(0xFFF0F5FF),
+  'Düğün/Yıldönümü': Color(0xFFFFF0F6),
+  'Sınav/İş': Color(0xFFFFF8F0),
+  'Seyahat': Color(0xFFF0FFF7),
+  'Konser/Etkinlik': Color(0xFFF3F0FF),
+  'Spor/Hedef': Color(0xFFF4FAEE),
+  '+ Özel': Color(0xFFF7F6F2),
 };
 const Map<String, Color> kCatTextLight = {
   'Doğum Günü': Color(0xFF791F1F),
@@ -53,14 +53,14 @@ const Map<String, Color> kCatTextLight = {
   '+ Özel': Color(0xFF444441),
 };
 const Map<String, Color> kCatBgDark = {
-  'Doğum Günü': Color(0xFF501313),
-  'Tatil': Color(0xFF042C53),
-  'Düğün/Yıldönümü': Color(0xFF4B1528),
-  'Sınav/İş': Color(0xFF412402),
-  'Seyahat': Color(0xFF04342C),
-  'Konser/Etkinlik': Color(0xFF26215C),
-  'Spor/Hedef': Color(0xFF173404),
-  '+ Özel': Color(0xFF2C2C2A),
+  'Doğum Günü': Color(0xFF2A1010),
+  'Tatil': Color(0xFF0A1A2A),
+  'Düğün/Yıldönümü': Color(0xFF2A1018),
+  'Sınav/İş': Color(0xFF2A1A08),
+  'Seyahat': Color(0xFF0A2A1E),
+  'Konser/Etkinlik': Color(0xFF18142A),
+  'Spor/Hedef': Color(0xFF122208),
+  '+ Özel': Color(0xFF222220),
 };
 const Map<String, Color> kCatTextDark = {
   'Doğum Günü': Color(0xFFF7C1C1),
@@ -322,7 +322,8 @@ class _WizardStep1State extends State<_WizardStep1> {
                       maxLength: _maxLen,
                       style: GoogleFonts.poppins(
                         fontSize: 16,
-                        color: textColor,
+                        fontWeight: FontWeight.w400,
+                        color: isDark ? Colors.white : Colors.black,
                       ),
                       textCapitalization:
                           TextCapitalization.sentences,
@@ -333,14 +334,16 @@ class _WizardStep1State extends State<_WizardStep1> {
                         hintText: 'Etkinlik adı',
                         hintStyle: GoogleFonts.poppins(
                           fontSize: 16,
-                          color: const Color(0xFFAEAEB2),
+                          fontWeight: FontWeight.w300,
+                          letterSpacing: -0.3,
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.4)
+                              : Colors.black.withValues(alpha: 0.4),
                         ),
                         prefixIcon: Icon(
                           Icons.edit_outlined,
                           size: 20,
-                          color: isDark
-                              ? Colors.grey[500]
-                              : AppTheme.secondaryText,
+                          color: isDark ? Colors.white : Colors.black,
                         ),
                         counterText: '',
                         suffixText:
@@ -377,9 +380,9 @@ class _WizardStep1State extends State<_WizardStep1> {
                       crossAxisCount: 2,
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      mainAxisSpacing: 10,
-                      crossAxisSpacing: 10,
-                      childAspectRatio: 2.0,
+                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 12,
+                      childAspectRatio: 1.7,
                       children: _gridCategories.map((cat) {
                         final isCustomKey =
                             cat == EventModel.customCategoryKey;
@@ -387,16 +390,6 @@ class _WizardStep1State extends State<_WizardStep1> {
                             ? _isCustomSelected
                             : cat == _selectedCat;
                         final emoji = kCategoryEmojis[cat] ?? '📌';
-                        final bg = isDark
-                            ? (kCatBgDark[cat] ??
-                                const Color(0xFF2C2C2A))
-                            : (kCatBgLight[cat] ??
-                                const Color(0xFFF1EFE8));
-                        final catTextColor = isDark
-                            ? (kCatTextDark[cat] ??
-                                const Color(0xFFD3D1C7))
-                            : (kCatTextLight[cat] ??
-                                const Color(0xFF444441));
 
                         final displayName = isCustomKey && _isCustomSelected
                             ? _customCatName!
@@ -423,14 +416,34 @@ class _WizardStep1State extends State<_WizardStep1> {
                               duration:
                                   const Duration(milliseconds: 200),
                               decoration: BoxDecoration(
-                                color: bg,
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: isDark
+                                      ? [
+                                          Colors.white.withValues(alpha: 0.08),
+                                          Colors.white.withValues(alpha: 0.03),
+                                        ]
+                                      : [
+                                          Colors.white.withValues(alpha: 0.9),
+                                          Colors.grey.withValues(alpha: 0.05),
+                                        ],
+                                ),
                                 borderRadius:
-                                    BorderRadius.circular(18),
-                                border: isSelected
-                                    ? Border.all(
-                                        color: catTextColor,
-                                        width: 2.5)
-                                    : null,
+                                    BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? (isDark ? Colors.white : Colors.black)
+                                      : Colors.black.withValues(alpha: 0.04),
+                                  width: isSelected ? 1.5 : 1.0,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.03),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
                               ),
                               child: Stack(
                                 clipBehavior: Clip.none,
@@ -443,17 +456,21 @@ class _WizardStep1State extends State<_WizardStep1> {
                                         Text(emoji,
                                             style:
                                                 const TextStyle(
-                                                    fontSize: 32)),
-                                        const SizedBox(height: 4),
+                                                    fontSize: 40)),
+                                        const SizedBox(height: 6),
                                         Text(
                                           displayName,
                                           style: TextStyle(
                                             fontFamily:
                                                 '.SF Pro Text',
                                             fontSize: 13,
-                                            fontWeight:
-                                                FontWeight.w500,
-                                            color: catTextColor,
+                                            fontWeight: isSelected
+                                                ? FontWeight.w600
+                                                : FontWeight.w500,
+                                            letterSpacing: -0.2,
+                                            color: isSelected
+                                                ? (isDark ? Colors.white : Colors.black)
+                                                : (isDark ? Colors.grey[400] : Colors.grey[600]),
                                           ),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
@@ -469,7 +486,7 @@ class _WizardStep1State extends State<_WizardStep1> {
                                         width: 18,
                                         height: 18,
                                         decoration: BoxDecoration(
-                                          color: catTextColor,
+                                          color: isDark ? Colors.white : Colors.black,
                                           shape: BoxShape.circle,
                                         ),
                                         child: const Icon(
