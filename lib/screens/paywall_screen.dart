@@ -47,12 +47,12 @@ class _PaywallScreenState extends State<PaywallScreen> {
       final success = await ProService().purchase();
       if (!mounted) return;
       if (success) Navigator.pop(context);
-    } on PlatformException catch (_) {
+    } on PlatformException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Satın alma başarısız oldu. Lütfen tekrar deneyin.',
+            'Hata: ${e.toString()}',
             style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
           ),
           backgroundColor: const Color(0xE61C1C1E),
@@ -89,12 +89,12 @@ class _PaywallScreenState extends State<PaywallScreen> {
           ),
         );
       }
-    } on PlatformException catch (_) {
+    } on PlatformException catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Geri yükleme başarısız oldu. Lütfen tekrar deneyin.',
+            'Hata: ${e.toString()}',
             style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
           ),
           backgroundColor: const Color(0xE61C1C1E),

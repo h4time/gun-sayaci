@@ -13,8 +13,10 @@ class ProService extends ChangeNotifier {
   bool get isPro => _isPro;
 
   Future<void> init() async {
+    debugPrint('ProService init başladı');
     try {
       final customerInfo = await Purchases.getCustomerInfo();
+      debugPrint('CustomerInfo: ${customerInfo.entitlements.all}');
       _checkPro(customerInfo);
     } catch (e) {
       debugPrint('ProService init error: $e');
@@ -32,16 +34,21 @@ class ProService extends ChangeNotifier {
   }
 
   Future<bool> purchase() async {
+    debugPrint('Purchase başladı');
     try {
       final offerings = await Purchases.getOfferings();
+      debugPrint('Offerings: ${offerings.current}');
       final current = offerings.current;
       if (current == null) throw Exception('No offerings available');
 
+      debugPrint('Packages: ${current.availablePackages}');
       final package =
           current.lifetime ?? current.availablePackages.first;
+      debugPrint('Selected package: $package');
       await Purchases.purchase(PurchaseParams.package(package));
       return true;
     } on PlatformException catch (e) {
+      debugPrint('Purchase error: $e');
       final errorCode = PurchasesErrorHelper.getErrorCode(e);
       if (errorCode == PurchasesErrorCode.purchaseCancelledError) {
         return false;
