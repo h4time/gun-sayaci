@@ -21,6 +21,7 @@ import 'app_icon_screen.dart';
 import 'category_themes_screen.dart';
 import 'paywall_screen.dart';
 import '../services/pro_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PreferencesScreen extends StatefulWidget {
   const PreferencesScreen({super.key});
@@ -811,7 +812,37 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                         cardBg: cardBg,
                         textColor: textColor,
                         secondaryColor: secondaryColor,
-                        onTap: _showTimePicker,
+                        onTap: () async {
+                          final hasPermission =
+                              await NotificationService().requestPermissions();
+                          if (!mounted) return;
+                          if (hasPermission) {
+                            _showTimePicker();
+                          } else {
+                            showCupertinoDialog(
+                              context: context,
+                              builder: (ctx) => CupertinoAlertDialog(
+                                title: const Text('Bildirimler Kapalı'),
+                                content: const Text(
+                                  'Bildirim alabilmek için Ayarlar\'dan bildirimlere izin vermeniz gerekiyor.',
+                                ),
+                                actions: [
+                                  CupertinoDialogAction(
+                                    child: const Text('Ayarları Aç'),
+                                    onPressed: () {
+                                      Navigator.pop(ctx);
+                                      launchUrl(Uri.parse('app-settings:'));
+                                    },
+                                  ),
+                                  CupertinoDialogAction(
+                                    child: const Text('Tamam'),
+                                    onPressed: () => Navigator.pop(ctx),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                        },
                       ),
 
                       const SizedBox(height: 24),

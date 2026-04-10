@@ -270,6 +270,59 @@ class _PaywallScreenState extends State<PaywallScreen> {
                 ),
               ),
 
+              const SizedBox(height: 16),
+
+              // Restore purchases
+              GestureDetector(
+                onTap: () {
+                  debugPrint('Restore purchases - RevenueCat bağlanacak');
+                },
+                child: Text(
+                  'Satın almaları geri yükle',
+                  style: GoogleFonts.poppins(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.white.withValues(alpha: 0.4),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 8),
+
+              // Legal links
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  GestureDetector(
+                    onTap: () {},
+                    child: Text(
+                      'Gizlilik Politikası',
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        color: Colors.white.withValues(alpha: 0.3),
+                      ),
+                    ),
+                  ),
+                  Text(
+                    ' · ',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.white.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {},
+                    child: Text(
+                      'Kullanım Şartları',
+                      style: GoogleFonts.poppins(
+                        fontSize: 11,
+                        color: Colors.white.withValues(alpha: 0.3),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
               SizedBox(height: 16 + bottomPadding),
             ],
           ),

@@ -17,6 +17,7 @@ class NotificationService {
 
   Future<void> init() async {
     tz_data.initializeTimeZones();
+    tz.setLocalLocation(tz.getLocation('Europe/Istanbul'));
 
     const androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -34,12 +35,26 @@ class NotificationService {
     await _plugin.initialize(settings);
   }
 
-  Future<void> requestPermissions() async {
+  Future<bool> requestPermissions() async {
     final android = _plugin.resolvePlatformSpecificImplementation<
         AndroidFlutterLocalNotificationsPlugin>();
     if (android != null) {
-      await android.requestNotificationsPermission();
+      final granted = await android.requestNotificationsPermission();
+      return granted ?? false;
     }
+
+    final ios = _plugin.resolvePlatformSpecificImplementation<
+        IOSFlutterLocalNotificationsPlugin>();
+    if (ios != null) {
+      final granted = await ios.requestPermissions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+      return granted ?? false;
+    }
+
+    return false;
   }
 
   /// Get saved notification time (defaults to 09:00)
