@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PaywallScreen extends StatefulWidget {
   const PaywallScreen({super.key});
@@ -17,26 +18,18 @@ class _PaywallScreenState extends State<PaywallScreen> {
     (
       icon: Icons.aspect_ratio_rounded,
       title: 'Tüm Etkinlik Boyutları',
-      description:
-          'Büyük, orta ve küçük kart boyutlarıyla\netkinliklerini istediğin gibi görüntüle.',
     ),
     (
       icon: Icons.palette_outlined,
       title: 'Kategori Temaları',
-      description:
-          'Her kategoriye özel arka plan fotoğrafı seç,\netkinliklerini kişiselleştir.',
     ),
     (
       icon: Icons.cloud_outlined,
       title: 'Yedekleme & Geri Yükleme',
-      description:
-          'Etkinliklerini yedekle ve istediğin zaman\ngeri yükle. Verilerini asla kaybetme.',
     ),
     (
       icon: Icons.block_rounded,
       title: 'Reklamsız Deneyim',
-      description:
-          'Hiçbir reklam olmadan, kesintisiz\nbir deneyimin keyfini çıkar.',
     ),
   ];
 
@@ -52,10 +45,10 @@ class _PaywallScreenState extends State<PaywallScreen> {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          // Content
-          Column(
+      body: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          child: Column(
             children: [
               SizedBox(height: MediaQuery.of(context).padding.top + 16),
 
@@ -119,7 +112,8 @@ class _PaywallScreenState extends State<PaywallScreen> {
               const SizedBox(height: 40),
 
               // Feature carousel
-              Expanded(
+              SizedBox(
+                height: 140,
                 child: PageView.builder(
                   controller: _pageController,
                   itemCount: _features.length,
@@ -132,10 +126,17 @@ class _PaywallScreenState extends State<PaywallScreen> {
                         children: [
                           // Icon circle
                           Container(
-                            width: 80,
-                            height: 80,
+                            width: 72,
+                            height: 72,
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.08),
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.white.withValues(alpha: 0.12),
+                                  Colors.white.withValues(alpha: 0.04),
+                                ],
+                              ),
                               shape: BoxShape.circle,
                               border: Border.all(
                                 color: Colors.white.withValues(alpha: 0.06),
@@ -144,8 +145,8 @@ class _PaywallScreenState extends State<PaywallScreen> {
                             ),
                             child: Icon(
                               f.icon,
-                              size: 36,
-                              color: Colors.white70,
+                              size: 32,
+                              color: Colors.white,
                             ),
                           ),
                           const SizedBox(height: 24),
@@ -153,21 +154,10 @@ class _PaywallScreenState extends State<PaywallScreen> {
                             f.title,
                             textAlign: TextAlign.center,
                             style: GoogleFonts.poppins(
-                              fontSize: 22,
+                              fontSize: 20,
                               fontWeight: FontWeight.w600,
                               color: Colors.white,
                               letterSpacing: -0.3,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            f.description,
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.poppins(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w400,
-                              color: Colors.white54,
-                              height: 1.5,
                             ),
                           ),
                         ],
@@ -294,7 +284,10 @@ class _PaywallScreenState extends State<PaywallScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   GestureDetector(
-                    onTap: () {},
+                    onTap: () {
+                      launchUrl(Uri.parse(
+                          'https://ozelgunleriunutma.com/gizlilik-politikasi/'));
+                    },
                     child: Text(
                       'Gizlilik Politikası',
                       style: GoogleFonts.poppins(
@@ -311,7 +304,10 @@ class _PaywallScreenState extends State<PaywallScreen> {
                     ),
                   ),
                   GestureDetector(
-                    onTap: () {},
+                    onTap: () {
+                      launchUrl(Uri.parse(
+                          'https://ozelgunleriunutma.com/kullanim-sartlari/'));
+                    },
                     child: Text(
                       'Kullanım Şartları',
                       style: GoogleFonts.poppins(
@@ -326,7 +322,7 @@ class _PaywallScreenState extends State<PaywallScreen> {
               SizedBox(height: 16 + bottomPadding),
             ],
           ),
-        ],
+        ),
       ),
     );
   }

@@ -35,7 +35,6 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
   bool _isLoading = false;
   int _notifHour = 9;
   int _notifMinute = 0;
-  String _cardSize = 'large';
   String _selectedIcon = 'primary';
 
   @override
@@ -61,13 +60,11 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
   Future<void> _loadPrefs() async {
     final (hour, minute) = await NotificationService().getNotificationTime();
     final prefs = await SharedPreferences.getInstance();
-    final size = prefs.getString('eventCardSize') ?? 'large';
     final icon = prefs.getString('selectedAppIcon') ?? 'primary';
     if (mounted) {
       setState(() {
         _notifHour = hour;
         _notifMinute = minute;
-        _cardSize = size;
         _selectedIcon = icon;
       });
     }
@@ -75,17 +72,6 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
 
   String get _timeLabel =>
       '${_notifHour.toString().padLeft(2, '0')}:${_notifMinute.toString().padLeft(2, '0')}';
-
-  String get _sizeLabelTr {
-    switch (_cardSize) {
-      case 'small':
-        return 'Küçük';
-      case 'medium':
-        return 'Orta';
-      default:
-        return 'Büyük';
-    }
-  }
 
   // === NOTIFICATION TIME PICKER ===
   void _showTimePicker() {
@@ -689,11 +675,8 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                             if (!ProService().isPro) _proBadge(),
                             if (!ProService().isPro)
                               const SizedBox(width: 8),
-                            Text(
-                              _sizeLabelTr,
-                              style: GoogleFonts.poppins(
-                                  fontSize: 14, color: secondaryColor),
-                            ),
+                            Icon(Icons.chevron_right_rounded,
+                                size: 22, color: secondaryColor),
                           ],
                         ),
                         cardBg: cardBg,
@@ -718,6 +701,10 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                         GestureDetector(
                           onTap: () {
                             HapticFeedback.selectionClick();
+                            if (!ProService().isPro) {
+                              _openPaywall();
+                              return;
+                            }
                             Navigator.push(
                               context,
                               MaterialPageRoute(
@@ -756,6 +743,9 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                                     ),
                                   ),
                                 ),
+                                if (!ProService().isPro) _proBadge(),
+                                if (!ProService().isPro)
+                                  const SizedBox(width: 8),
                                 Icon(Icons.chevron_right_rounded,
                                     size: 22,
                                     color: secondaryColor),
