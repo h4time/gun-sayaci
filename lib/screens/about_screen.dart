@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../theme/app_theme.dart';
+
 
 class AboutScreen extends StatefulWidget {
   const AboutScreen({super.key});
@@ -32,10 +31,10 @@ class _AboutScreenState extends State<AboutScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? Colors.black : const Color(0xFFF5F5F0);
-    final textColor = isDark ? Colors.white : AppTheme.primaryText;
-    final secondaryColor = isDark ? Colors.grey[400]! : AppTheme.secondaryText;
+    final textColor = isDark ? Colors.white : Colors.black;
     final cardBg = isDark ? const Color(0xFF1C1C1E) : Colors.white;
-    const linkColor = Color(0xFF4A90D9);
+    const subtitleColor = Color(0xFFB0B0B0);
+    const linkColor = Color(0xFF5B7FFF);
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -58,10 +57,11 @@ class _AboutScreenState extends State<AboutScreen> {
                   const Spacer(),
                   Text(
                     'Hakkında',
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: textColor,
+                      letterSpacing: -0.3,
                     ),
                   ),
                   const Spacer(),
@@ -73,10 +73,11 @@ class _AboutScreenState extends State<AboutScreen> {
             Expanded(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 20, vertical: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Column(
                   children: [
+                    const SizedBox(height: 20),
+
                     // Card 1: App Info
                     Container(
                       width: double.infinity,
@@ -88,12 +89,11 @@ class _AboutScreenState extends State<AboutScreen> {
                       child: Row(
                         children: [
                           ClipRRect(
-                            borderRadius: BorderRadius.circular(18),
+                            borderRadius: BorderRadius.circular(20),
                             child: Image.asset(
-                              'assets/icons/icon_white.png',
-                              width: 72,
-                              height: 72,
-                              fit: BoxFit.cover,
+                              'assets/images/logo_transparent.png',
+                              width: 80,
+                              height: 80,
                             ),
                           ),
                           const SizedBox(width: 20),
@@ -104,7 +104,7 @@ class _AboutScreenState extends State<AboutScreen> {
                               children: [
                                 Text(
                                   'Gün Sayacı',
-                                  style: GoogleFonts.poppins(
+                                  style: TextStyle(
                                     fontSize: 22,
                                     fontWeight: FontWeight.w700,
                                     color: textColor,
@@ -114,10 +114,10 @@ class _AboutScreenState extends State<AboutScreen> {
                                 const SizedBox(height: 4),
                                 Text(
                                   _version,
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 14,
+                                  style: const TextStyle(
+                                    fontSize: 15,
                                     fontWeight: FontWeight.w400,
-                                    color: secondaryColor,
+                                    color: subtitleColor,
                                   ),
                                 ),
                                 const SizedBox(height: 12),
@@ -129,55 +129,47 @@ class _AboutScreenState extends State<AboutScreen> {
                                         launchUrl(Uri.parse(
                                             'https://ozelgunleriunutma.com'));
                                       },
-                                      child: Row(
-                                        mainAxisSize:
-                                            MainAxisSize.min,
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
                                         children: [
                                           Text(
                                             'Website',
-                                            style:
-                                                GoogleFonts.poppins(
-                                              fontSize: 14,
-                                              fontWeight:
-                                                  FontWeight.w500,
+                                            style: TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w500,
                                               color: linkColor,
                                             ),
                                           ),
-                                          const SizedBox(width: 3),
-                                          const Icon(
-                                            Icons
-                                                .arrow_outward_rounded,
+                                          SizedBox(width: 3),
+                                          Icon(
+                                            Icons.arrow_outward_rounded,
                                             size: 14,
                                             color: linkColor,
                                           ),
                                         ],
                                       ),
                                     ),
-                                    const SizedBox(width: 16),
+                                    const SizedBox(width: 20),
                                     GestureDetector(
                                       onTap: () {
                                         HapticFeedback.lightImpact();
                                         launchUrl(Uri.parse(
-                                            'https://instagram.com/ozelgunleriunutma'));
+                                            'mailto:info@ozelgunleriunutma.com'));
                                       },
-                                      child: Row(
-                                        mainAxisSize:
-                                            MainAxisSize.min,
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
                                         children: [
                                           Text(
-                                            'Instagram',
-                                            style:
-                                                GoogleFonts.poppins(
-                                              fontSize: 14,
-                                              fontWeight:
-                                                  FontWeight.w500,
+                                            'İletişim',
+                                            style: TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w500,
                                               color: linkColor,
                                             ),
                                           ),
-                                          const SizedBox(width: 3),
-                                          const Icon(
-                                            Icons
-                                                .arrow_outward_rounded,
+                                          SizedBox(width: 3),
+                                          Icon(
+                                            Icons.arrow_outward_rounded,
                                             size: 14,
                                             color: linkColor,
                                           ),
@@ -193,7 +185,7 @@ class _AboutScreenState extends State<AboutScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
 
                     // Card 2: Developer
                     Container(
@@ -205,12 +197,11 @@ class _AboutScreenState extends State<AboutScreen> {
                       ),
                       child: Row(
                         children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(36),
+                          ClipOval(
                             child: Image.asset(
                               'assets/images/developer.jpg',
-                              width: 72,
-                              height: 72,
+                              width: 80,
+                              height: 80,
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -222,87 +213,21 @@ class _AboutScreenState extends State<AboutScreen> {
                               children: [
                                 Text(
                                   'Ömer Faruk Öztürk',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 18,
+                                  style: TextStyle(
+                                    fontSize: 22,
                                     fontWeight: FontWeight.w700,
                                     color: textColor,
-                                    letterSpacing: -0.3,
+                                    letterSpacing: -0.5,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
-                                Text(
+                                const Text(
                                   'Geliştirici',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: 14,
+                                  style: TextStyle(
+                                    fontSize: 15,
                                     fontWeight: FontWeight.w400,
-                                    color: secondaryColor,
+                                    color: subtitleColor,
                                   ),
-                                ),
-                                const SizedBox(height: 12),
-                                Row(
-                                  children: [
-                                    GestureDetector(
-                                      onTap: () {
-                                        HapticFeedback.lightImpact();
-                                        launchUrl(Uri.parse(
-                                            'https://ozelgunleriunutma.com'));
-                                      },
-                                      child: Row(
-                                        mainAxisSize:
-                                            MainAxisSize.min,
-                                        children: [
-                                          Text(
-                                            'Website',
-                                            style:
-                                                GoogleFonts.poppins(
-                                              fontSize: 14,
-                                              fontWeight:
-                                                  FontWeight.w500,
-                                              color: linkColor,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 3),
-                                          const Icon(
-                                            Icons
-                                                .arrow_outward_rounded,
-                                            size: 14,
-                                            color: linkColor,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    GestureDetector(
-                                      onTap: () {
-                                        HapticFeedback.lightImpact();
-                                        launchUrl(Uri.parse(
-                                            'https://youtube.com/@ozelgunleriunutma'));
-                                      },
-                                      child: Row(
-                                        mainAxisSize:
-                                            MainAxisSize.min,
-                                        children: [
-                                          Text(
-                                            'YouTube',
-                                            style:
-                                                GoogleFonts.poppins(
-                                              fontSize: 14,
-                                              fontWeight:
-                                                  FontWeight.w500,
-                                              color: linkColor,
-                                            ),
-                                          ),
-                                          const SizedBox(width: 3),
-                                          const Icon(
-                                            Icons
-                                                .arrow_outward_rounded,
-                                            size: 14,
-                                            color: linkColor,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
                                 ),
                               ],
                             ),

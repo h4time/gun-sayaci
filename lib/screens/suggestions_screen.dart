@@ -72,26 +72,10 @@ class _SuggestionsScreenState extends State<SuggestionsScreen> {
                     const SizedBox(height: 16),
 
                     // App icon
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            blurRadius: 16,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: Image.asset(
-                          'assets/icons/icon_white.png',
-                          width: 72,
-                          height: 72,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
+                    Image.asset(
+                      'assets/images/logo_transparent.png',
+                      width: 72,
+                      height: 72,
                     ),
                     const SizedBox(height: 32),
 

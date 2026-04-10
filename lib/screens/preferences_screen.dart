@@ -624,70 +624,18 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                       // Pro banner
                       if (!ProService().isPro)
                         Padding(
-                          padding: const EdgeInsets.only(bottom: 20),
+                          padding: const EdgeInsets.only(bottom: 16),
                           child: GestureDetector(
                             onTap: () {
                               HapticFeedback.lightImpact();
                               _openPaywall();
                             },
-                            child: Container(
-                              padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    Color(0xFF1A1A1A),
-                                    Color(0xFF2C2C2E),
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Gün Sayacı Pro\'ya Geç',
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 17,
-                                            fontWeight: FontWeight.w700,
-                                            color: Colors.white,
-                                            letterSpacing: -0.3,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          'Tüm özelliklerin kilidini aç',
-                                          style: GoogleFonts.poppins(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w400,
-                                            color: const Color(0xFF8E8E93),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Container(
-                                    width: 48,
-                                    height: 48,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white
-                                          .withValues(alpha: 0.1),
-                                      borderRadius:
-                                          BorderRadius.circular(14),
-                                    ),
-                                    child: const Icon(
-                                      Icons.workspace_premium_rounded,
-                                      size: 26,
-                                      color: Colors.white70,
-                                    ),
-                                  ),
-                                ],
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(16),
+                              child: Image.asset(
+                                'assets/images/reklam-banner.png',
+                                width: double.infinity,
+                                fit: BoxFit.fitWidth,
                               ),
                             ),
                           ),
@@ -737,9 +685,8 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            if (_cardSize != 'large' && !ProService().isPro)
-                              _proBadge(),
-                            if (_cardSize != 'large' && !ProService().isPro)
+                            if (!ProService().isPro) _proBadge(),
+                            if (!ProService().isPro)
                               const SizedBox(width: 8),
                             Text(
                               _sizeLabelTr,
@@ -752,6 +699,10 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                         textColor: textColor,
                         secondaryColor: secondaryColor,
                         onTap: () async {
+                          if (!ProService().isPro) {
+                            _openPaywall();
+                            return;
+                          }
                           await Navigator.push(
                             context,
                             MaterialPageRoute(

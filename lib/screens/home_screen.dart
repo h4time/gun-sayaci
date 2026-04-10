@@ -17,6 +17,8 @@ import 'about_screen.dart';
 import 'support_screen.dart';
 import 'suggestions_screen.dart';
 import 'preferences_screen.dart';
+import 'paywall_screen.dart';
+import '../services/pro_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -631,6 +633,28 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: ListView(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       children: [
+                        if (!ProService().isPro)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) =>
+                                          const PaywallScreen()),
+                                );
+                              },
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(16),
+                                child: Image.asset(
+                                  'assets/images/reklam-banner.png',
+                                  width: double.infinity,
+                                  fit: BoxFit.fitWidth,
+                                ),
+                              ),
+                            ),
+                          ),
                         _buildSettingsCard(
                           icon: Icons.tune_rounded,
                           label: 'Tercihler',

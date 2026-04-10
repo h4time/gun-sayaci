@@ -5,6 +5,7 @@ class ProService extends ChangeNotifier {
   factory ProService() => _instance;
   ProService._internal();
 
+  // DEBUG: Test için true/false yap, yayınlamadan önce false bırak
   bool _isPro = false;
 
   bool get isPro => _isPro;
