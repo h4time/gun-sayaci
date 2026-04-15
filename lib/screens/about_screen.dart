@@ -121,7 +121,9 @@ class _AboutScreenState extends State<AboutScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 12),
-                                Row(
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
                                   children: [
                                     GestureDetector(
                                       onTap: () {
@@ -131,7 +133,7 @@ class _AboutScreenState extends State<AboutScreen> {
                                       },
                                       child: Container(
                                         padding: const EdgeInsets.symmetric(
-                                            horizontal: 16, vertical: 10),
+                                            horizontal: 12, vertical: 10),
                                         decoration: BoxDecoration(
                                           color: isDark
                                               ? const Color(0xFF2C2C2E)
@@ -144,14 +146,14 @@ class _AboutScreenState extends State<AboutScreen> {
                                           children: [
                                             Icon(
                                               Icons.language_rounded,
-                                              size: 16,
+                                              size: 14,
                                               color: linkColor,
                                             ),
                                             SizedBox(width: 6),
                                             Text(
                                               'Website',
                                               style: TextStyle(
-                                                fontSize: 13,
+                                                fontSize: 12,
                                                 fontWeight: FontWeight.w500,
                                                 color: linkColor,
                                               ),
@@ -160,7 +162,6 @@ class _AboutScreenState extends State<AboutScreen> {
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(width: 12),
                                     GestureDetector(
                                       onTap: () {
                                         HapticFeedback.lightImpact();
@@ -169,7 +170,7 @@ class _AboutScreenState extends State<AboutScreen> {
                                       },
                                       child: Container(
                                         padding: const EdgeInsets.symmetric(
-                                            horizontal: 16, vertical: 10),
+                                            horizontal: 12, vertical: 10),
                                         decoration: BoxDecoration(
                                           color: isDark
                                               ? const Color(0xFF2C2C2E)
@@ -182,14 +183,14 @@ class _AboutScreenState extends State<AboutScreen> {
                                           children: [
                                             Icon(
                                               Icons.mail_outline_rounded,
-                                              size: 16,
+                                              size: 14,
                                               color: linkColor,
                                             ),
                                             SizedBox(width: 6),
                                             Text(
                                               'İletişim',
                                               style: TextStyle(
-                                                fontSize: 13,
+                                                fontSize: 12,
                                                 fontWeight: FontWeight.w500,
                                                 color: linkColor,
                                               ),
