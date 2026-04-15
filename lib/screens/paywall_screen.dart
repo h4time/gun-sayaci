@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/pro_service.dart';
 
@@ -15,6 +16,28 @@ class _PaywallScreenState extends State<PaywallScreen> {
   final _pageController = PageController();
   int _currentPage = 0;
   bool _isLoading = false;
+  String? _priceString;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPrice();
+  }
+
+  Future<void> _loadPrice() async {
+    try {
+      final offerings = await Purchases.getOfferings();
+      final current = offerings.current;
+      if (current != null && mounted) {
+        final package = current.lifetime ?? current.availablePackages.first;
+        setState(() {
+          _priceString = package.storeProduct.priceString;
+        });
+      }
+    } catch (_) {
+      // fallback to hardcoded price
+    }
+  }
 
   static const _features = [
     (
@@ -47,12 +70,12 @@ class _PaywallScreenState extends State<PaywallScreen> {
       final success = await ProService().purchase();
       if (!mounted) return;
       if (success) Navigator.pop(context);
-    } on PlatformException catch (e) {
+    } on PlatformException {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Hata: ${e.toString()}',
+            'Satın alma işlemi başarısız oldu. Lütfen tekrar deneyin.',
             style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
           ),
           backgroundColor: const Color(0xE61C1C1E),
@@ -89,12 +112,12 @@ class _PaywallScreenState extends State<PaywallScreen> {
           ),
         );
       }
-    } on PlatformException catch (e) {
+    } on PlatformException {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Hata: ${e.toString()}',
+            'Geri yükleme başarısız oldu. Lütfen tekrar deneyin.',
             style: GoogleFonts.poppins(fontSize: 14, color: Colors.white),
           ),
           backgroundColor: const Color(0xE61C1C1E),
@@ -291,15 +314,24 @@ class _PaywallScreenState extends State<PaywallScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Text(
-                      '₺149,99',
-                      style: GoogleFonts.poppins(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                        letterSpacing: -1,
-                      ),
-                    ),
+                    _priceString == null
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white54,
+                            ),
+                          )
+                        : Text(
+                            _priceString ?? '₺149,99',
+                            style: GoogleFonts.poppins(
+                              fontSize: 32,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                              letterSpacing: -1,
+                            ),
+                          ),
                     const SizedBox(height: 20),
                     // Buy button
                     GestureDetector(
