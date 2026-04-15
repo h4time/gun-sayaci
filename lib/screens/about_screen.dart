@@ -23,7 +23,7 @@ class _AboutScreenState extends State<AboutScreen> {
   Future<void> _loadVersion() async {
     final info = await PackageInfo.fromPlatform();
     if (mounted) {
-      setState(() => _version = 'v${info.version}+${info.buildNumber}');
+      setState(() => _version = 'v${info.version}');
     }
   }
 
@@ -33,7 +33,7 @@ class _AboutScreenState extends State<AboutScreen> {
     final bgColor = isDark ? Colors.black : const Color(0xFFF5F5F0);
     final textColor = isDark ? Colors.white : Colors.black;
     final cardBg = isDark ? const Color(0xFF1C1C1E) : Colors.white;
-    const subtitleColor = Color(0xFFB0B0B0);
+    final subtitleColor = isDark ? Colors.white70 : const Color(0xFF1A1A1A);
     const linkColor = Color(0xFF5B7FFF);
 
     return Scaffold(
@@ -114,7 +114,7 @@ class _AboutScreenState extends State<AboutScreen> {
                                 const SizedBox(height: 4),
                                 Text(
                                   _version,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 15,
                                     fontWeight: FontWeight.w400,
                                     color: subtitleColor,
@@ -129,51 +129,73 @@ class _AboutScreenState extends State<AboutScreen> {
                                         launchUrl(Uri.parse(
                                             'https://ozelgunleriunutma.com'));
                                       },
-                                      child: const Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text(
-                                            'Website',
-                                            style: TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w500,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16, vertical: 10),
+                                        decoration: BoxDecoration(
+                                          color: isDark
+                                              ? const Color(0xFF2C2C2E)
+                                              : const Color(0xFFF2F2F7),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
+                                        child: const Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              Icons.language_rounded,
+                                              size: 16,
                                               color: linkColor,
                                             ),
-                                          ),
-                                          SizedBox(width: 3),
-                                          Icon(
-                                            Icons.arrow_outward_rounded,
-                                            size: 14,
-                                            color: linkColor,
-                                          ),
-                                        ],
+                                            SizedBox(width: 6),
+                                            Text(
+                                              'Website',
+                                              style: TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w500,
+                                                color: linkColor,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                    const SizedBox(width: 20),
+                                    const SizedBox(width: 12),
                                     GestureDetector(
                                       onTap: () {
                                         HapticFeedback.lightImpact();
                                         launchUrl(Uri.parse(
                                             'mailto:info@ozelgunleriunutma.com'));
                                       },
-                                      child: const Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text(
-                                            'İletişim',
-                                            style: TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w500,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 16, vertical: 10),
+                                        decoration: BoxDecoration(
+                                          color: isDark
+                                              ? const Color(0xFF2C2C2E)
+                                              : const Color(0xFFF2F2F7),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                        ),
+                                        child: const Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              Icons.mail_outline_rounded,
+                                              size: 16,
                                               color: linkColor,
                                             ),
-                                          ),
-                                          SizedBox(width: 3),
-                                          Icon(
-                                            Icons.arrow_outward_rounded,
-                                            size: 14,
-                                            color: linkColor,
-                                          ),
-                                        ],
+                                            SizedBox(width: 6),
+                                            Text(
+                                              'İletişim',
+                                              style: TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w500,
+                                                color: linkColor,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -221,7 +243,7 @@ class _AboutScreenState extends State<AboutScreen> {
                                   ),
                                 ),
                                 const SizedBox(height: 4),
-                                const Text(
+                                Text(
                                   'Geliştirici',
                                   style: TextStyle(
                                     fontSize: 15,

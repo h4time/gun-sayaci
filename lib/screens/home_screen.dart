@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/event_model.dart';
@@ -34,11 +35,18 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedTab = 1; // 0=Geçmiş, 1=Yaklaşan
   bool _imagesPrecached = false;
   String _cardSize = 'large';
+  String _version = 'v1.0.0';
 
   @override
   void initState() {
     super.initState();
     _loadCardSize();
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    if (mounted) setState(() => _version = 'v${info.version}');
   }
 
   Future<void> _loadCardSize() async {
@@ -734,7 +742,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 32),
                         Center(
                           child: Text(
-                            'v1.0.0',
+                            _version,
                             style: GoogleFonts.poppins(
                               fontSize: 12,
                               color: secondaryColor,
