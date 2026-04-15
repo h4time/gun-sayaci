@@ -25,13 +25,13 @@ class AppTheme {
 
   // Category image mapping
   static const Map<String, String> categoryImages = {
-    'Doğum Günü': 'assets/images/birthday.jpg',
-    'Tatil': 'assets/images/travel.jpg',
-    'Düğün/Yıldönümü': 'assets/images/celebration.jpg',
-    'Sınav/İş': 'assets/images/exam.jpg',
+    'Doğum Günü': 'assets/category_themes/birthday/birthday_10.jpg',
+    'Tatil': 'assets/category_themes/holiday/holiday_8.jpg',
+    'Düğün/Yıldönümü': 'assets/category_themes/wedding/wedding_5.jpg',
+    'Sınav/İş': 'assets/category_themes/exam/exam_4.jpg',
     'Seyahat': 'assets/images/seyahat.jpg',
     'Konser/Etkinlik': 'assets/images/concert.jpg',
-    'Spor/Hedef': 'assets/images/spor.jpg',
+    'Spor/Hedef': 'assets/category_themes/sport/sport_10.jpg',
   };
 
   // Category icon mapping
@@ -64,7 +64,7 @@ class AppTheme {
       return _categoryThemeCache['other']!;
     }
     // Varsayılan
-    return categoryImages[category] ?? 'assets/images/other.jpg';
+    return categoryImages[category] ?? 'assets/category_themes/other/other_8.jpg';
   }
 
   static bool isFilePath(String path) {
