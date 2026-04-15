@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/event_model.dart';
 import '../services/storage_service.dart';
@@ -633,7 +634,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: ListView(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       children: [
-                        if (!ProService().isPro)
+                        if (!context.read<ProService>().isPro)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 16),
                             child: GestureDetector(

@@ -566,6 +566,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
     final secondaryColor =
         isDark ? Colors.grey[400]! : AppTheme.secondaryText;
     final themeProvider = Provider.of<ThemeProvider>(context);
+    final proService = context.watch<ProService>();
 
     return Stack(
       children: [
@@ -609,7 +610,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                         horizontal: 16, vertical: 16),
                     children: [
                       // Pro banner
-                      if (!ProService().isPro)
+                      if (!proService.isPro)
                         Padding(
                           padding: const EdgeInsets.only(bottom: 16),
                           child: GestureDetector(
@@ -672,8 +673,8 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            if (!ProService().isPro) _proBadge(),
-                            if (!ProService().isPro)
+                            if (!proService.isPro) _proBadge(),
+                            if (!proService.isPro)
                               const SizedBox(width: 8),
                             Icon(Icons.chevron_right_rounded,
                                 size: 22, color: secondaryColor),
@@ -683,7 +684,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                         textColor: textColor,
                         secondaryColor: secondaryColor,
                         onTap: () async {
-                          if (!ProService().isPro) {
+                          if (!proService.isPro) {
                             _openPaywall();
                             return;
                           }
@@ -701,7 +702,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                         GestureDetector(
                           onTap: () {
                             HapticFeedback.selectionClick();
-                            if (!ProService().isPro) {
+                            if (!proService.isPro) {
                               _openPaywall();
                               return;
                             }
@@ -743,8 +744,8 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                                     ),
                                   ),
                                 ),
-                                if (!ProService().isPro) _proBadge(),
-                                if (!ProService().isPro)
+                                if (!proService.isPro) _proBadge(),
+                                if (!proService.isPro)
                                   const SizedBox(width: 8),
                                 Icon(Icons.chevron_right_rounded,
                                     size: 22,
@@ -762,8 +763,8 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            if (!ProService().isPro) _proBadge(),
-                            if (!ProService().isPro) const SizedBox(width: 8),
+                            if (!proService.isPro) _proBadge(),
+                            if (!proService.isPro) const SizedBox(width: 8),
                             Icon(Icons.chevron_right_rounded,
                                 size: 22, color: secondaryColor),
                           ],
@@ -772,7 +773,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                         textColor: textColor,
                         secondaryColor: secondaryColor,
                         onTap: () async {
-                          if (!ProService().isPro) {
+                          if (!proService.isPro) {
                             _openPaywall();
                             return;
                           }
@@ -846,8 +847,8 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            if (!ProService().isPro) _proBadge(),
-                            if (!ProService().isPro) const SizedBox(width: 8),
+                            if (!proService.isPro) _proBadge(),
+                            if (!proService.isPro) const SizedBox(width: 8),
                             Icon(Icons.chevron_right_rounded,
                                 size: 22, color: secondaryColor),
                           ],
@@ -856,7 +857,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                         textColor: textColor,
                         secondaryColor: secondaryColor,
                         onTap: () {
-                          if (!ProService().isPro) {
+                          if (!proService.isPro) {
                             _openPaywall();
                             return;
                           }
@@ -870,8 +871,8 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            if (!ProService().isPro) _proBadge(),
-                            if (!ProService().isPro) const SizedBox(width: 8),
+                            if (!proService.isPro) _proBadge(),
+                            if (!proService.isPro) const SizedBox(width: 8),
                             Icon(Icons.chevron_right_rounded,
                                 size: 22, color: secondaryColor),
                           ],
@@ -880,7 +881,7 @@ class _PreferencesScreenState extends State<PreferencesScreen> {
                         textColor: textColor,
                         secondaryColor: secondaryColor,
                         onTap: () {
-                          if (!ProService().isPro) {
+                          if (!proService.isPro) {
                             _openPaywall();
                             return;
                           }
