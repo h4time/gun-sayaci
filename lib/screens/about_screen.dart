@@ -34,7 +34,8 @@ class _AboutScreenState extends State<AboutScreen> {
     final textColor = isDark ? Colors.white : Colors.black;
     final cardBg = isDark ? const Color(0xFF1C1C1E) : Colors.white;
     final subtitleColor = isDark ? Colors.white70 : const Color(0xFF1A1A1A);
-    const linkColor = Color(0xFF5B7FFF);
+    final btnColor = isDark ? Colors.white70 : const Color(0xFF1A1A1A);
+    final btnBorder = isDark ? const Color(0xFF3A3A3C) : const Color(0xFFE5E5EA);
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -135,27 +136,29 @@ class _AboutScreenState extends State<AboutScreen> {
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 12, vertical: 10),
                                         decoration: BoxDecoration(
-                                          color: isDark
-                                              ? const Color(0xFF2C2C2E)
-                                              : const Color(0xFFF2F2F7),
+                                          color: Colors.transparent,
                                           borderRadius:
-                                              BorderRadius.circular(12),
+                                              BorderRadius.circular(10),
+                                          border: Border.all(
+                                            color: btnBorder,
+                                            width: 1,
+                                          ),
                                         ),
-                                        child: const Row(
+                                        child: Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             Icon(
                                               Icons.language_rounded,
                                               size: 14,
-                                              color: linkColor,
+                                              color: btnColor,
                                             ),
-                                            SizedBox(width: 6),
+                                            const SizedBox(width: 6),
                                             Text(
                                               'Website',
                                               style: TextStyle(
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.w500,
-                                                color: linkColor,
+                                                color: btnColor,
                                               ),
                                             ),
                                           ],
@@ -172,27 +175,29 @@ class _AboutScreenState extends State<AboutScreen> {
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 12, vertical: 10),
                                         decoration: BoxDecoration(
-                                          color: isDark
-                                              ? const Color(0xFF2C2C2E)
-                                              : const Color(0xFFF2F2F7),
+                                          color: Colors.transparent,
                                           borderRadius:
-                                              BorderRadius.circular(12),
+                                              BorderRadius.circular(10),
+                                          border: Border.all(
+                                            color: btnBorder,
+                                            width: 1,
+                                          ),
                                         ),
-                                        child: const Row(
+                                        child: Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
                                             Icon(
                                               Icons.mail_outline_rounded,
                                               size: 14,
-                                              color: linkColor,
+                                              color: btnColor,
                                             ),
-                                            SizedBox(width: 6),
+                                            const SizedBox(width: 6),
                                             Text(
                                               'İletişim',
                                               style: TextStyle(
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.w500,
-                                                color: linkColor,
+                                                color: btnColor,
                                               ),
                                             ),
                                           ],
